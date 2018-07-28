@@ -82,11 +82,9 @@ ExternalTasks:
   Description: Set up an ssh-agent for the robot
   Path: tasks/ssh-init.sh
 
-# If a job doesn't specify otherwise, these are the defaults for StatusChannel
-# and channels where jobs can be run
+# If a job doesn't specify otherwise, this is the channel where it runs
 DefaultJobChannel: floyd-jobs
-# Job names and paths to the script. NOTE: no reason why multiple jobs
-# can't have the same path. Job config in conf/jobs/<job>.yaml can differ.
+
 # Timezone for scheduled jobs
 TimeZone: "America/New_York"
 # Job scheduling with github.com/robfig/cron
@@ -107,11 +105,6 @@ DefaultMessageFormat: Raw
 LogLevel: info
 #LogLevel: trace
 #LogLevel: debug
-
-## Configured in $GOPHER_INSTALLDIR by Ansible
-# HistoryProvider: file
-# HistoryConfig:
-#   Directory: /var/lib/gopherbot
 
 # The robot's email address (used in From:)
 #Email: robbie@robot.com
