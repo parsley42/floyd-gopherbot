@@ -1,0 +1,6 @@
+# Required configuration for the 'memes' plugin to work; get a username and
+# password from imgflip.com
+Disabled: false
+Config:
+  Username: "dpmemer"
+#  Password: # stored in brain

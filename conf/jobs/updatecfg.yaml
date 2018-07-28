@@ -1,0 +1,10 @@
+---
+RequireAdmin: true
+Channel: botdev
+AllowDirect: true
+HistoryLogs: 7
+Verbose: true
+Triggers:
+- User: github
+  Channel: ljdev
+  Regex: 'new commit.*github.com\/parsley42\/floyd-gopherbot\/tree'

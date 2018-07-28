@@ -1,0 +1,8 @@
+---
+Verbose: true
+Triggers:
+- User: github
+  Channel: ljdev
+  Regex: 'new commit.*github.com\/(.*)\/tree\/(.*)\|'
+Channel: botdev
+# Arguments: # TODO: only if this job will be interactively ran with 'run job ...'

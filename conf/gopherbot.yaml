@@ -1,0 +1,126 @@
+# This is the non-sensitive configuration for Bender, the gopherbot used
+# for development.
+# List of users that can issue admin commands like reload, quit. Should be
+# a list of user handles / nicks.
+AdminUsers: [ "parsley", "adrienne" ]
+
+# Port to listen on for http/JSON api calls, for external plugins
+LocalPort: 8888
+
+Protocol: slack
+ProtocolConfig:
+  MaxMessageSplit: 2
+
+# Specify the mechanism for storing the robots memories.
+Brain: dynamo
+BrainConfig:
+  TableName: Floyd
+  Region: "us-east-1"
+EncryptBrain: true
+
+# The administrator of this robot, can be retrieved in plugins with
+# GetBotAttribute("admin")
+AdminContact: "David Parsley, <parsley@linuxjedi.org>"
+
+# If a plugin doesn't specify otherwise it will be active in these channels;
+# defaults to all channels
+DefaultChannels: [ "general", "random", "chat", "botdev" ]
+
+# One-character alias the bot can be called by. Note: not all single characters
+# are supported. If your robot doesn't respond to e.g. ";ping", try changing
+# the Alias to something other than ";". Popular alternatives: ":", "!", "*".
+Alias: ";"
+
+# List of external plugins/jobs to configure; generally scripts using a gopherbot
+# script library. The robot will look for plugins in the installation directory
+# first, then the local config directory.
+ExternalPlugins:
+- Name: weather
+  Path: plugins/weather.rb
+  Description: A plugin using OpenWeatherMap to give the weather
+  Parameters:
+  - Name: TEMP_UNITS
+    Value: imperial # or 'metric'
+  - Name: DEFAULT_COUNTRY
+    Value: 'us' # or other ISO 3166 country code
+- Name: chuck
+  Description: No robot worth it's salt doesn't know all about CHUCK NORRIS
+  Path: plugins/chuck.rb
+- Name: update
+  Description: A plugin that triggers the updatecfg job
+  Path: plugins/update.sh
+ExternalJobs:
+# - Name: githubci
+#   Description: "Job triggered by git pushes"
+#   Path: jobs/githubci.sh
+- Name: updatecfg
+  Description: A job that updates the robot's configuration from git
+  Path: jobs/updatecfg.sh
+ExternalTasks:
+- Name: notify
+  Description: Send a message to a user, generally as a FailTask
+  Path: tasks/notify.sh
+- Name: dmnotify
+  Description: Send a DM to a user, generally as a FailTask
+  Path: tasks/dmnotify.sh
+- Name: ansible-playbook
+  Description: Ansible playbook (ansible-playbook)
+  Path: /usr/bin/ansible-playbook
+- Name: ansible
+  Description: Ansible
+  Path: /usr/bin/ansible
+- Name: ssh
+  Description: Secure shell for remoting in to hosts
+  Path: /usr/bin/ssh
+- Name: git
+  Description: One SCM to Rule Them All
+  Path: /usr/bin/git
+- Name: ssh-agent
+  Description: ssh agent command for terminating the agent
+  Path: /usr/bin/ssh-agent
+- Name: ssh-init
+  Description: Set up an ssh-agent for the robot
+  Path: tasks/ssh-init.sh
+
+# If a job doesn't specify otherwise, these are the defaults for StatusChannel
+# and channels where jobs can be run
+DefaultJobChannel: floyd-jobs
+# Job names and paths to the script. NOTE: no reason why multiple jobs
+# can't have the same path. Job config in conf/jobs/<job>.yaml can differ.
+# Timezone for scheduled jobs
+TimeZone: "America/New_York"
+# Job scheduling with github.com/robfig/cron
+# ScheduledTasks:
+# - Name: hello
+#   Schedule: "@every 5m" # see: https://godoc.org/github.com/robfig/cron
+#   Arguments: # an array of strings; up to the job to parse numbers & bools
+#   - "Hello, World !!!"
+# - Job: hello
+#   Schedule: "0 */5 * * * *"
+
+DefaultMessageFormat: Raw
+# Users the bot should never listen to
+#IgnoreUsers: [ "otherbot", "slackbot" ]
+
+# Initial log level, one of trace, debug, info, warn, error. See 'help log'
+# for help on changing the log level and viewing contents of the log.
+LogLevel: info
+#LogLevel: trace
+#LogLevel: debug
+
+## Configured in $GOPHER_INSTALLDIR by Ansible
+# HistoryProvider: file
+# HistoryConfig:
+#   Directory: /var/lib/gopherbot
+
+# The robot's email address (used in From:)
+#Email: robbie@robot.com
+# Configuration for sending out email. For Authtype: none, User and Password
+# can be left out. Note that sending email will fail if Email isn't set.
+#MailConfig:
+#  Mailhost: <somehost:port>
+#  Authtype: <plain|none>
+#  User: <authuser>
+#  Password: <password>
+
+DefaultElevator: duo
