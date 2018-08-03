@@ -50,28 +50,37 @@ ExternalPlugins:
   Description: A plugin that triggers the updatecfg job
   Path: plugins/update.sh
 ExternalJobs:
-# - Name: githubci
-#   Description: "Job triggered by git pushes"
-#   Path: jobs/githubci.sh
 - Name: updatecfg
   Description: A job that updates the robot's configuration from git
   Path: jobs/updatecfg.sh
+- Name: cloud9wks
+  Description: Job to launch a Cloud9 Instance
+  Path: jobs/c9wks.sh
+  Parameters:
+  - Name: DEVHOST
+    Value: parsley
+  - Name: AWS_REGION
+    Value: us-east-1
 ExternalTasks:
+- Name: git-sync
+  Description: Simple script to clone or pull a repository
+  Path: tasks/git-sync.sh
+- Name: ansible-playbook
+  NameSpace: ansible
+  Description: Ansible playbook (ansible-playbook) runner with vault passphrase helper
+  Path: tasks/ansible-playbook.sh
+- Name: build-c9wks
+  Description: Task that launches and configures the Cloud9 instance
+  Path: tasks/build-c9wks.sh
+  Parameters:
+  - Name: KEYNAME
+    Value: floyd
 - Name: notify
   Description: Send a message to a user, generally as a FailTask
   Path: tasks/notify.sh
 - Name: dmnotify
   Description: Send a DM to a user, generally as a FailTask
   Path: tasks/dmnotify.sh
-- Name: ansible-playbook
-  Description: Ansible playbook (ansible-playbook)
-  Path: /usr/bin/ansible-playbook
-- Name: ansible
-  Description: Ansible
-  Path: /usr/bin/ansible
-- Name: ssh
-  Description: Secure shell for remoting in to hosts
-  Path: /usr/bin/ssh
 - Name: git
   Description: One SCM to Rule Them All
   Path: /usr/bin/git
@@ -81,6 +90,9 @@ ExternalTasks:
 - Name: ssh-init
   Description: Set up an ssh-agent for the robot
   Path: tasks/ssh-init.sh
+- Name: ssh-scan
+  Description: Helper script for adding ssh host keys to known_hosts
+  Path: tasks/ssh-scan.sh
 
 # If a job doesn't specify otherwise, this is the channel where it runs
 DefaultJobChannel: floyd-jobs

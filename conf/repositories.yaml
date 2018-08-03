@@ -1,0 +1,7 @@
+# repositories.yaml - Gopherbot's list of repositories that are valid for extenting the namespace
+github.com/parsley42/aws-devel:
+  type: localsync # just keep a local copy in $GOPHER_WORKSPACE
+bitbucket.org/lnxjedi/linuxjedi-private:
+  type: localsync
+github.com/parsley42/aws-linuxjed:
+  type: localsync
