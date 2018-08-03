@@ -46,6 +46,9 @@ ExternalPlugins:
 - Name: chuck
   Description: No robot worth it's salt doesn't know all about CHUCK NORRIS
   Path: plugins/chuck.rb
+- Name: code
+  Description: A plugin that triggers the cloud9wks job
+  Path: plugins/code.sh
 - Name: update
   Description: A plugin that triggers the updatecfg job
   Path: plugins/update.sh
