@@ -12,6 +12,7 @@ SetParameter DEVHOST $DEVHOST
 # Don't queue if this build in progress, just exit
 if ! Exclusive $DEVHOST false
 then
+    Log Warn "Job already in progress, exiting"
     exit 0
 fi
 
