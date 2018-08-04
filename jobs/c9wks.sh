@@ -15,7 +15,7 @@ if [ -z "$DEVIMG" ]
 then
     DEVIMG=amzn2devel
     # Export value for the rest of the pipeline
-    SetParameter DEVHOST $DEVIMG
+    SetParameter DEVIMG $DEVIMG
 fi
 
 # Don't queue if this build in progress, just exit
