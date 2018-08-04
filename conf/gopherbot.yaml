@@ -60,8 +60,16 @@ ExternalJobs:
   Description: Job to launch a Cloud9 Instance
   Path: jobs/c9wks.sh
   Parameters:
+  - Name: AWS_REGION
+    Value: us-east-1
+- Name: cloud9f28
+  Description: Job to launch a Fedora 28 Cloud9 Instance
+  Path: jobs/c9wks.sh
+  Parameters:
   - Name: DEVHOST
-    Value: parsley
+    Value: f28devel
+  - Name: DEVIMG
+    Value: f28devel
   - Name: AWS_REGION
     Value: us-east-1
 ExternalTasks:

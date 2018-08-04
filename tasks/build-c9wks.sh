@@ -8,7 +8,7 @@ ACTION=$1
 
 case "$ACTION" in
 "launch")
-    ec2 create -w $DEVHOST $KEYNAME amzn2devel
+    ec2 create -w $DEVHOST $KEYNAME $DEVIMG
     ;;
 "configure")
     AddTask ansible-playbook c9devel.yaml -e target=$DEVHOST
