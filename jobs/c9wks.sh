@@ -13,7 +13,7 @@ then
 fi
 if [ -z "$DEVIMG" ]
 then
-    DEVIMG=c9amzndevel
+    DEVIMG=amzn2devel
     # Export value for the rest of the pipeline
     SetParameter DEVIMG $DEVIMG
 fi
