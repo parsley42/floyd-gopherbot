@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# build-c9wks.sh - task for launching and configuring a Cloud9 workstation
+# wake-bender.sh - task for launching and configuring a Gopherbot dev instance
 
 source $GOPHER_INSTALLDIR/lib/gopherbot_v1.sh
 
@@ -15,7 +15,7 @@ case "$ACTION" in
     ;;
 *)
     SetWorkingDirectory bender/deploy-gopherbot
-    AddTask build-c9wks launch
-    AddTask build-c9wks configure
+    AddTask wake-bender launch
+    AddTask wake-bender configure
     ;;
 esac
