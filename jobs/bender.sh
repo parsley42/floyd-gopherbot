@@ -23,7 +23,7 @@ AddTask ssh-init
 AddTask ssh-scan bitbucket.org
 AddTask git-sync git@bitbucket.org:lnxjedi/linuxjedi-private.git linuxjedi-private
 AddTask git-sync https://github.com/parsley42/deploy-gopherbot.git deploy-gopherbot
-AddTask git-sync https://github.com/parsley42/ansible-role-gopherbot.git lnxjedi.gopherbot
+AddTask git-sync https://github.com/lnxjedi/ansible-role-gopherbot.git lnxjedi.gopherbot
 AddTask git-sync https://github.com/parsley42/aws-linuxjedi.git aws-linuxjedi
 # The task that actuall builds the workstation
 AddTask wake-bender
