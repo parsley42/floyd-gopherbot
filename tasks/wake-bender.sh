@@ -11,6 +11,8 @@ case "$ACTION" in
     ec2 create -w bender $KEYNAME gopherdev
     ;;
 "configure")
+    mkdir -p roles
+    ansible-galaxy install -r requirements.yaml
     AddTask ansible-playbook deploy.yaml -e target=bender
     ;;
 *)
