@@ -3,5 +3,7 @@ github.com/parsley42/aws-devel:
   type: none
 bitbucket.org/lnxjedi/linuxjedi-private:
   type: none
-github.com/parsley42/aws-linuxjed:
+github.com/parsley42/aws-linuxjedi:
+  type: none
+github.com/parsley42/deploy-gopherbot:
   type: none
