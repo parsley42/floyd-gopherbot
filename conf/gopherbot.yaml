@@ -47,11 +47,8 @@ ExternalPlugins:
   Description: No robot worth it's salt doesn't know all about CHUCK NORRIS
   Path: plugins/chuck.rb
 - Name: code
-  Description: A plugin that triggers the cloud9wks job
+  Description: A convenience plugin for launching code-related jobs
   Path: plugins/code.sh
-- Name: startbender
-  Description: A plugin that triggers the wakebender job
-  Path: plugins/bender.sh
 - Name: update
   Description: A plugin that triggers the updatecfg job
   Path: plugins/update.sh

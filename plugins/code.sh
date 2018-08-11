@@ -12,9 +12,13 @@ configure(){
 Users: [ 'parsley' ]
 AllowDirect: true
 Help:
+- Keywords: [ "wake", "bender" ]
+  Helptext: [ "(bot), wake bender - get Bender up and running for development" ]
 - Keywords: [ "code", "program" ]
   Helptext: [ "(bot), start coding - launch a Cloud9 developer spot instance" ]
 CommandMatchers:
+- Command: "wake"
+  Regex: '(?i:wake bender)'
 - Command: "code"
   Regex: '(?i:start coding)'
 EOF
@@ -29,5 +33,11 @@ case "$COMMAND" in
     AddTask cloud9wks
     AddTask notify $GOPHER_USER "Happy coding!"
     FailTask notify $GOPHER_USER "Build failed, check history for the 'cloud9wks' job"
+    ;;
+  "wake")
+    Say "Ok, I'll see if I can rouse Bender and let you know when he's awake..."
+    AddTask bender
+    AddTask notify $GOPHER_USER "Bender is up, have at it!"
+    FailTask notify $GOPHER_USER "Couldn't wake Bender - check history for the 'bender' job"
     ;;
 esac
