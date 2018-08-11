@@ -49,6 +49,9 @@ ExternalPlugins:
 - Name: code
   Description: A plugin that triggers the cloud9wks job
   Path: plugins/code.sh
+- Name: startbender
+  Description: A plugin that triggers the wakebender job
+  Path: plugins/bender.sh
 - Name: update
   Description: A plugin that triggers the updatecfg job
   Path: plugins/update.sh
@@ -59,6 +62,12 @@ ExternalJobs:
 - Name: cloud9wks
   Description: Job to launch a Cloud9 Instance
   Path: jobs/c9wks.sh
+  Parameters:
+  - Name: AWS_REGION
+    Value: us-east-1
+- Name: bender
+  Description: Job to launch a spot instance for Bender and configure it
+  Path: jobs/bender.sh
   Parameters:
   - Name: AWS_REGION
     Value: us-east-1
@@ -83,6 +92,12 @@ ExternalTasks:
 - Name: build-c9wks
   Description: Task that launches and configures the Cloud9 instance
   Path: tasks/build-c9wks.sh
+  Parameters:
+  - Name: KEYNAME
+    Value: floyd
+- Name: wake-bender
+  Description: Task that launches and configures the instance for Bender
+  Path: tasks/wake-bender.sh
   Parameters:
   - Name: KEYNAME
     Value: floyd
