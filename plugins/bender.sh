@@ -24,7 +24,7 @@ case "$COMMAND" in
 	"configure")
 		configure
 		;;
-  "code")
+  "wake")
     Say "Ok, I'll see if I can rouse Bender and let you know when he's awake..."
     AddTask bender
     AddTask notify $GOPHER_USER "Bender is up, have at it!"
