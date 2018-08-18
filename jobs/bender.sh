@@ -21,8 +21,8 @@ ExtendNamespace github.com/parsley42/deploy-gopherbot 21
 # Set up the pipeline; all tasks must be defined in gopherbot.yaml
 AddTask ssh-init
 AddTask ssh-scan bitbucket.org
-AddTask git-sync git@bitbucket.org:lnxjedi/linuxjedi-private.git linuxjedi-private
-AddTask git-sync https://github.com/parsley42/deploy-gopherbot.git deploy-gopherbot
-AddTask git-sync https://github.com/parsley42/aws-linuxjedi.git aws-linuxjedi
+AddTask git-sync git@bitbucket.org:lnxjedi/linuxjedi-private.git master linuxjedi-private
+AddTask git-sync https://github.com/parsley42/aws-linuxjedi.git master aws-linuxjedi
+AddTask git-sync https://github.com/parsley42/deploy-gopherbot.git master deploy-gopherbot
 # The task that actuall builds the workstation
 AddTask wake-bender
