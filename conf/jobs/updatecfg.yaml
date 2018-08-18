@@ -2,7 +2,6 @@
 RequireAdmin: true
 AllowDirect: true
 HistoryLogs: 7
-Verbose: true
 Triggers:
 - User: github
   Channel: ljdev

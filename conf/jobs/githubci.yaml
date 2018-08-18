@@ -1,5 +1,4 @@
 ---
-Verbose: true
 Triggers:
 - User: github
   Channel: ljdev
