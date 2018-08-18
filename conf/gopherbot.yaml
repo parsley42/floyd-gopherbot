@@ -53,6 +53,14 @@ ExternalPlugins:
   Description: A plugin that triggers the updatecfg job
   Path: plugins/update.sh
 ExternalJobs:
+# GopherCI jobs
+- Name: gopherci
+  Description: A job triggered by commit posts in Slack
+  Path: jobs/gopherci.py
+- Name: localtrusted
+  Description: Job spawned by gopherci to just clone a repo locally and run .gopherci/pipeline.sh
+  Path: jobs/localtrusted.py
+
 - Name: updatecfg
   Description: A job that updates the robot's configuration from git
   Path: jobs/updatecfg.sh
@@ -82,6 +90,9 @@ ExternalTasks:
 - Name: git-sync
   Description: Simple script to clone or pull a repository
   Path: tasks/git-sync.sh
+- Name: localexec
+  Description: Simple utility for running scripts
+  Path: tasks/localexec.sh
 - Name: ansible-playbook
   NameSpace: ansible
   Description: Ansible playbook (ansible-playbook) runner with vault passphrase helper
