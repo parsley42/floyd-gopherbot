@@ -35,8 +35,8 @@ ExtendNamespace github.com/parsley42/aws-devel 21
 # Set up the pipeline; all tasks must be defined in gopherbot.yaml
 AddTask ssh-init
 AddTask ssh-scan bitbucket.org
-AddTask git-sync git@bitbucket.org:lnxjedi/linuxjedi-private.git linuxjedi-private
-AddTask git-sync https://github.com/parsley42/aws-devel.git aws-devel
-AddTask git-sync https://github.com/parsley42/aws-linuxjedi.git aws-linuxjedi
+AddTask git-sync git@bitbucket.org:lnxjedi/linuxjedi-private.git master linuxjedi-private
+AddTask git-sync https://github.com/parsley42/aws-devel.git master aws-devel
+AddTask git-sync https://github.com/parsley42/aws-linuxjedi.git master aws-linuxjedi
 # The task that actuall builds the workstation
 AddTask build-c9wks
