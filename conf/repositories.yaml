@@ -7,3 +7,19 @@ github.com/parsley42/aws-linuxjedi:
   type: none
 github.com/parsley42/deploy-gopherbot:
   type: none
+github.com/lnxjedi/gopherbot:
+  type: localtrusted
+  clone_url: https://github.com/lnxjedi/gopherbot.git
+  keep_history: 14
+  Parameters:
+  - Name: NOTIFY_USER
+    Value: parsley
+  - Name: PATH
+    Value: /home/robot/go/bin:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/usr/local/go/bin:/home/robot/bin
+github.com/lnxjedi/luminos:
+  type: localtrusted
+  clone_url: https://github.com/lnxjedi/luminos.git
+  keep_history: 14
+  Parameters:
+  - Name: PATH
+    Value: /home/robot/go/bin:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/usr/local/go/bin:/home/robot/bin
