@@ -60,7 +60,7 @@ ExternalJobs:
 - Name: localtrusted
   Description: Job spawned by gopherci to just clone a repo locally and run .gopherci/pipeline.sh
   Path: jobs/localtrusted.py
-
+# /GopherCI jobs
 - Name: updatecfg
   Description: A job that updates the robot's configuration from git
   Path: jobs/updatecfg.sh
@@ -87,6 +87,7 @@ ExternalJobs:
   - Name: AWS_REGION
     Value: us-east-1
 ExternalTasks:
+# GopherCI tasks
 - Name: git-sync
   Description: Simple script to clone or pull a repository
   Path: tasks/git-sync.sh
@@ -97,18 +98,6 @@ ExternalTasks:
   NameSpace: ansible
   Description: Ansible playbook (ansible-playbook) runner with vault passphrase helper
   Path: tasks/ansible-playbook.sh
-- Name: build-c9wks
-  Description: Task that launches and configures the Cloud9 instance
-  Path: tasks/build-c9wks.sh
-  Parameters:
-  - Name: KEYNAME
-    Value: floyd
-- Name: wake-bender
-  Description: Task that launches and configures the instance for Bender
-  Path: tasks/wake-bender.sh
-  Parameters:
-  - Name: KEYNAME
-    Value: floyd
 - Name: notify
   Description: Send a message to a user, generally as a FailTask
   Path: tasks/notify.sh
@@ -127,6 +116,21 @@ ExternalTasks:
 - Name: ssh-scan
   Description: Helper script for adding ssh host keys to known_hosts
   Path: tasks/ssh-scan.sh
+# /GopherCI tasks
+# Floyd job tasks
+- Name: build-c9wks
+  Description: Task that launches and configures the Cloud9 instance
+  Path: tasks/build-c9wks.sh
+  Parameters:
+  - Name: KEYNAME
+    Value: floyd
+- Name: wake-bender
+  Description: Task that launches and configures the instance for Bender
+  Path: tasks/wake-bender.sh
+  Parameters:
+  - Name: KEYNAME
+    Value: floyd
+# /Floyd job tasks
 
 # If a job doesn't specify otherwise, this is the channel where it runs
 DefaultJobChannel: floyd-jobs
