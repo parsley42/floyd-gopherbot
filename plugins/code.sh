@@ -15,12 +15,12 @@ Help:
 - Keywords: [ "wake", "bender" ]
   Helptext: [ "(bot), wake bender - get Bender up and running for development" ]
 - Keywords: [ "code", "program" ]
-  Helptext: [ "(bot), start coding - launch a Cloud9 developer spot instance" ]
+  Helptext: [ "(bot), start workstation - launch a Cloud9 developer spot instance" ]
 CommandMatchers:
 - Command: "wake"
   Regex: '(?i:wake bender)'
 - Command: "code"
-  Regex: '(?i:start coding)'
+  Regex: '(?i:start (?:coding|workstation))'
 EOF
 }
 
