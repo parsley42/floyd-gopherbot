@@ -96,7 +96,7 @@ ExternalTasks:
   Path: tasks/exec.sh
 - Name: localexec
   Description: Simple utility for running scripts in a repository
-  Path: tasks/exec.sh
+  Path: tasks/localexec.sh
 - Name: ansible-playbook
   NameSpace: ansible
   Description: Ansible playbook (ansible-playbook) runner with vault passphrase helper
