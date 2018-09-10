@@ -93,7 +93,7 @@ ExternalTasks:
   Path: tasks/git-sync.sh
 - Name: exec
   Description: Simple utility for running scripts in a repository
-  Path: tasks/exec.sh
+  Path: tasks/localexec.sh
 - Name: localexec
   Description: Simple utility for running scripts in a repository
   Path: tasks/localexec.sh
