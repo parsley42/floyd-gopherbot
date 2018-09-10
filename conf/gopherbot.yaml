@@ -91,9 +91,9 @@ ExternalTasks:
 - Name: git-sync
   Description: Simple script to clone or pull a repository
   Path: tasks/git-sync.sh
-- Name: localexec
-  Description: Simple utility for running scripts
-  Path: tasks/localexec.sh
+- Name: exec
+  Description: Simple utility for running scripts in a repository
+  Path: tasks/exec.sh
 - Name: ansible-playbook
   NameSpace: ansible
   Description: Ansible playbook (ansible-playbook) runner with vault passphrase helper
