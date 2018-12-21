@@ -57,7 +57,7 @@ ExternalJobs:
 - Name: gopherci
   Description: A job triggered by commit posts in Slack
   Path: jobs/gopherci.py
-- Name: localtrusted
+- Name: localbuild
   Description: Job spawned by gopherci to just clone a repo locally and run .gopherci/pipeline.sh
   Path: jobs/localtrusted.py
 # /GopherCI jobs
