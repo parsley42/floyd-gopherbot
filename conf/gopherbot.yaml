@@ -35,104 +35,54 @@ Alias: ";"
 # script library. The robot will look for plugins in the installation directory
 # first, then the local config directory.
 ExternalPlugins:
-- Name: weather
-  Path: plugins/weather.rb
-  Description: A plugin using OpenWeatherMap to give the weather
-  Parameters:
-  - Name: TEMP_UNITS
-    Value: imperial # or 'metric'
-  - Name: DEFAULT_COUNTRY
-    Value: 'us' # or other ISO 3166 country code
-- Name: chuck
-  Description: No robot worth it's salt doesn't know all about CHUCK NORRIS
-  Path: plugins/chuck.rb
-- Name: code
-  Description: A convenience plugin for launching code-related jobs
-  Path: plugins/code.sh
-- Name: update
-  Description: A plugin that triggers the updatecfg job
-  Path: plugins/update.sh
+  "weather":
+    Path: plugins/weather.rb
+    Description: A plugin using OpenWeatherMap to give the weather
+    Parameters:
+    - Name: TEMP_UNITS
+      Value: imperial # or 'metric'
+    - Name: DEFAULT_COUNTRY
+      Value: 'us' # or other ISO 3166 country code
+  "code":
+    Description: A convenience plugin for launching code-related jobs
+    Path: plugins/code.sh
 ExternalJobs:
-# GopherCI jobs
-- Name: gopherci
-  Description: A job triggered by commit posts in Slack
-  Path: jobs/gopherci.py
-- Name: localbuild
-  Description: Job spawned by gopherci to just clone a repo locally and run .gopherci/pipeline.sh
-  Path: jobs/localtrusted.py
-# /GopherCI jobs
-- Name: updatecfg
-  Description: A job that updates the robot's configuration from git
-  Path: jobs/updatecfg.sh
-- Name: cloud9wks
-  Description: Job to launch a Cloud9 Instance
-  Path: jobs/c9wks.sh
-  Parameters:
-  - Name: AWS_REGION
-    Value: us-east-1
-- Name: bender
-  Description: Job to launch a spot instance for Bender and configure it
-  Path: jobs/bender.sh
-  Parameters:
-  - Name: AWS_REGION
-    Value: us-east-1
-- Name: cloud9f28
-  Description: Job to launch a Fedora 28 Cloud9 Instance
-  Path: jobs/c9wks.sh
-  Parameters:
-  - Name: DEVHOST
-    Value: f28devel
-  - Name: DEVIMG
-    Value: f28devel
-  - Name: AWS_REGION
-    Value: us-east-1
+  "cloud9wks":
+    Description: Job to launch a Cloud9 Instance
+    Path: jobs/c9wks.sh
+    Parameters:
+    - Name: AWS_REGION
+      Value: us-east-1
+  "bender":
+    Description: Job to launch a spot instance for Bender and configure it
+    Path: jobs/bender.sh
+    Parameters:
+    - Name: AWS_REGION
+      Value: us-east-1
+  "cloud9f28":
+    Description: Job to launch a Fedora 28 Cloud9 Instance
+    Path: jobs/c9wks.sh
+    Parameters:
+    - Name: DEVHOST
+      Value: f28devel
+    - Name: DEVIMG
+      Value: f28devel
+    - Name: AWS_REGION
+      Value: us-east-1
 ExternalTasks:
-# GopherCI tasks
-- Name: git-sync
-  Description: Simple script to clone or pull a repository
-  Path: tasks/git-sync.sh
-- Name: exec
-  Description: Simple utility for running scripts in a repository
-  Path: tasks/localexec.sh
-- Name: localexec
-  Description: Simple utility for running scripts in a repository
-  Path: tasks/localexec.sh
-- Name: ansible-playbook
-  NameSpace: ansible
-  Description: Ansible playbook (ansible-playbook) runner with vault passphrase helper
-  Path: tasks/ansible-playbook.sh
-- Name: notify
-  Description: Send a message to a user, generally as a FailTask
-  Path: tasks/notify.sh
-- Name: dmnotify
-  Description: Send a DM to a user, generally as a FailTask
-  Path: tasks/dmnotify.sh
-- Name: git
-  Description: One SCM to Rule Them All
-  Path: /usr/bin/git
-- Name: ssh-agent
-  Description: ssh agent command for terminating the agent
-  Path: /usr/bin/ssh-agent
-- Name: ssh-init
-  Description: Set up an ssh-agent for the robot
-  Path: tasks/ssh-init.sh
-- Name: ssh-scan
-  Description: Helper script for adding ssh host keys to known_hosts
-  Path: tasks/ssh-scan.sh
-# /GopherCI tasks
 # Floyd job tasks
-- Name: build-c9wks
-  Description: Task that launches and configures the Cloud9 instance
-  Path: tasks/build-c9wks.sh
-  Parameters:
-  - Name: KEYNAME
-    Value: floyd
-- Name: wake-bender
-  Description: Task that launches and configures the instance for Bender
-  Path: tasks/wake-bender.sh
-  Parameters:
-  - Name: KEYNAME
-    Value: floyd
+  "build-c9wks":
+    Description: Task that launches and configures the Cloud9 instance
+    Path: tasks/build-c9wks.sh
+    Parameters:
+    - Name: KEYNAME
+      Value: floyd
+  "wake-bender":
+    Description: Task that launches and configures the instance for Bender
+    Path: tasks/wake-bender.sh
+    Parameters:
+    - Name: KEYNAME
+      Value: floyd
 # /Floyd job tasks
 
 # If a job doesn't specify otherwise, this is the channel where it runs
