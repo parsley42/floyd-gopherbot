@@ -29,6 +29,12 @@ BotInfo:
   FirstName: Floyd
   LastName: Gopherbot
 
+MailConfig:
+  Mailhost: smtp.gmail.com:587
+  Authtype: plain
+  User: floyd@linuxjedi.org
+  Password: {{ decrypt "vezuay3EVKr//JaD8bx/Hp0ZXk2rCuoS2c4Ms4PossteRMCu5omrUY1gpJY=" }}
+
 # If a plugin doesn't specify otherwise it will be active in these channels;
 # defaults to all channels
 DefaultChannels: [ "general", "random", "chat", "botdev" ]
