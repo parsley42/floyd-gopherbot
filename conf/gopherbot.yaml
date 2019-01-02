@@ -22,6 +22,13 @@ EncryptBrain: true
 # GetBotAttribute("admin")
 AdminContact: "David Parsley, <parsley@linuxjedi.org>"
 
+BotInfo:
+  UserName: floyd
+  Email: floyd@linuxjedi.org
+  FullName: Floyd Gopherbot
+  FirstName: Floyd
+  LastName: Gopherbot
+
 # If a plugin doesn't specify otherwise it will be active in these channels;
 # defaults to all channels
 DefaultChannels: [ "general", "random", "chat", "botdev" ]
