@@ -14,8 +14,6 @@ github.com/lnxjedi/gopherbot:
   Parameters:
   - Name: NOTIFY_USER
     Value: parsley
-  - Name: PATH
-    Value: /home/robot/go/bin:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/usr/local/go/bin:/home/robot/bin
 github.com/lnxjedi/luminos:
   type: localbuild
   clone_url: https://github.com/lnxjedi/luminos.git
@@ -23,5 +21,3 @@ github.com/lnxjedi/luminos:
   Parameters:
   - Name: NOTIFY_USER
     Value: parsley
-  - Name: PATH
-    Value: /home/robot/go/bin:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/usr/local/go/bin:/home/robot/bin
