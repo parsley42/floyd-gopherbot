@@ -118,9 +118,9 @@ DefaultMessageFormat: Raw
 
 # Initial log level, one of trace, debug, info, warn, error. See 'help log'
 # for help on changing the log level and viewing contents of the log.
-LogLevel: info
+#LogLevel: info
 #LogLevel: trace
-#LogLevel: debug
+LogLevel: debug
 
 # The robot's email address (used in From:)
 #Email: robbie@robot.com
