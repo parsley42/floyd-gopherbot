@@ -29,6 +29,12 @@ BotInfo:
   FirstName: Floyd
   LastName: Gopherbot
 
+UserRoster:
+# Clu is the dev bot on my laptop
+- UserName: clu
+  UserID: UDV39JHT6
+  TriggersOnly: true
+
 MailConfig:
   Mailhost: smtp.gmail.com:587
   Authtype: plain
