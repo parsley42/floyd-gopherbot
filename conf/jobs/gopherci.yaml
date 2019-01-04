@@ -5,6 +5,10 @@ Triggers:
 - User: github
   Channel: ljdev
   Regex: 'new commit.*(github.com\/.*)\/tree\/(.*)\|'
+# Build something if Clu tells him to
+- User: clu
+  Channel: ljdev
+  Regex: 'build (github.com\/[^/]+\/[^/]+)\/(.*)'
 # Arguments to be supplied with `run job`
 Arguments:
 - Label: repository
