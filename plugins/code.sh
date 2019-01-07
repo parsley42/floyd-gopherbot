@@ -30,13 +30,13 @@ case "$COMMAND" in
 		;;
   "code")
     Say "Ok, I'll start the 'cloud9wks' job and let you know when your workstation is ready..."
-    AddTask cloud9wks
+    AddJob cloud9wks
     AddTask notify $GOPHER_USER "Happy coding!"
     FailTask notify $GOPHER_USER "Build failed, check history for the 'cloud9wks' job"
     ;;
   "wake")
     Say "Ok, I'll see if I can rouse Bender and let you know when he's awake..."
-    AddTask bender
+    AddJob bender
     AddTask notify $GOPHER_USER "Bender is up, have at it!"
     FailTask notify $GOPHER_USER "Couldn't wake Bender - check history for the 'bender' job"
     ;;
