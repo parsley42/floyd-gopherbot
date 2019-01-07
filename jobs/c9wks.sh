@@ -30,7 +30,7 @@ mkdir -p $GOPHER_WORKSPACE/c9wks/$DEVHOST
 SetWorkingDirectory c9wks/$DEVHOST
 # The ansible-vault passphrase is stored in ansible:github.com/parsley42/aws-devel VAULT_PASSWORD=<foo>
 # Namespaces defined in repositories.yaml
-ExtendNamespace github.com/parsley42/aws-devel 21
+ExtendNamespace github.com/parsley42/aws-devel/master 21
 
 # Set up the pipeline; all tasks must be defined in gopherbot.yaml
 AddTask ssh-init

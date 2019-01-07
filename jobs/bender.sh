@@ -16,7 +16,7 @@ mkdir -p $GOPHER_WORKSPACE/bender
 SetWorkingDirectory bender
 # The ansible-vault passphrase is stored in ansible:github.com/parsley42/aws-devel VAULT_PASSWORD=<foo>
 # Namespaces defined in repositories.yaml
-ExtendNamespace github.com/parsley42/deploy-gopherbot 21
+ExtendNamespace github.com/parsley42/deploy-gopherbot/master 21
 
 # Set up the pipeline; all tasks must be defined in gopherbot.yaml
 AddTask ssh-init
