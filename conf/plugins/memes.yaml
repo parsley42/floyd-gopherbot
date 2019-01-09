@@ -3,4 +3,4 @@
 Disabled: false
 Config:
   Username: "dpmemer"
-#  Password: # stored in brain
+  Password: {{ decrypt "SfdevlSYlSek4Auxja+48E7hrYkI1BvicCAgPEWFAexgiowd0keJcA==" }}
