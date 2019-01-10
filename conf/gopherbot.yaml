@@ -62,9 +62,9 @@ ExternalPlugins:
       Value: imperial # or 'metric'
     - Name: DEFAULT_COUNTRY
       Value: 'us' # or other ISO 3166 country code
-  "code":
-    Description: A convenience plugin for launching code-related jobs
-    Path: plugins/code.sh
+  "util":
+    Description: A convenience plugin for various tasks
+    Path: plugins/util.sh
 ExternalJobs:
   "cloud9wks":
     Description: Job to launch a Cloud9 Instance

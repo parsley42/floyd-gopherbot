@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-# code.sh - 'vanity' plugin to launch a Cloud9 developer workstation spot instance
+# util.sh - shortcut plugin for a variety of actions
 
 source $GOPHER_INSTALLDIR/lib/gopherbot_v1.sh
 
@@ -21,6 +21,8 @@ CommandMatchers:
   Regex: '(?i:wake bender)'
 - Command: "code"
   Regex: '(?i:start (?:coding|workstation))'
+- Command: "dinner"
+  Regex: '(?i:(what's for )?dinner\??)'
 EOF
 }
 
@@ -39,5 +41,8 @@ case "$COMMAND" in
     AddJob bender
     AddTask notify $GOPHER_USER "Bender is up, have at it!"
     FailTask notify $GOPHER_USER "Couldn't wake Bender - check history for the 'bender' job"
+    ;;
+  "dinner")
+    AddCommand lists "pick a random item from the dinner meals list"
     ;;
 esac
