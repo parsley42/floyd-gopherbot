@@ -22,7 +22,7 @@ CommandMatchers:
 - Command: "code"
   Regex: '(?i:start (?:coding|workstation))'
 - Command: "dinner"
-  Regex: '(?i:(what's for )?dinner\??)'
+  Regex: "(?i:(what's for )?dinner\??)"
 EOF
 }
 
