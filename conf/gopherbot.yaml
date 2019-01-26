@@ -33,7 +33,7 @@ UserRoster:
 # Clu is the dev bot on my laptop
 - UserName: clu
   UserID: UDV39JHT6
-  #TriggersOnly: true
+  BotUser: true
 
 MailConfig:
   Mailhost: smtp.gmail.com:587
