@@ -9,9 +9,3 @@ Triggers:
 - User: clu
   Channel: ljdev
   Regex: 'build (github.com\/[^/]+\/[^/]+)\/(.*)'
-# Arguments to be supplied with `run job`
-Arguments:
-- Label: repository
-  Regex: '[\w-.]+\/[\w-.]+\/[\w-.]+\/?'
-- Label: branch
-  Regex: '[\w-.]+'
