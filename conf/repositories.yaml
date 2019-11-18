@@ -16,7 +16,7 @@ github.com/lnxjedi/gopherbot:
     Value: parsley
 github.com/parsley42/gopherbot:
   type: localbuild
-  clone_url: https://github.com/lnxjedi/gopherbot.git
+  clone_url: https://github.com/parsley42/gopherbot.git
   keep_history: 14
   Parameters:
   - Name: NOTIFY_USER
