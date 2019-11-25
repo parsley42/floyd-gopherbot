@@ -11,6 +11,11 @@ Protocol: slack
 ProtocolConfig:
   MaxMessageSplit: 2
 
+LoadableModules:
+  "dynamo":
+    Description: Brain using AWS DynamoDB for the key-value store
+    Path: brains/dynamodb.so
+
 # Specify the mechanism for storing the robots memories.
 Brain: dynamo
 BrainConfig:
