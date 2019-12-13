@@ -1,15 +1,18 @@
 # This is the non-sensitive configuration for Bender, the gopherbot used
 # for development.
-# List of users that can issue admin commands like reload, quit. Should be
-# a list of user handles / nicks.
-AdminUsers: [ "parsley", "adrienne" ]
 
 # Port to listen on for http/JSON api calls, for external plugins
 LocalPort: 8888
 
-Protocol: slack
+{{ $proto := env "GOPHER_PROTOCOL" | default "slack" }}
+Protocol: {{ $proto }}
+{{ if eq $proto "slack" }}
+# List of users that can issue admin commands like reload, quit. Should be
+# a list of user handles / nicks.
+AdminUsers: [ "parsley", "adrienne" ]
 ProtocolConfig:
   MaxMessageSplit: 2
+{{ end }}
 
 LoadableModules:
   "dynamo":
@@ -72,6 +75,8 @@ ExternalPlugins:
   "util":
     Description: A convenience plugin for various tasks
     Path: plugins/util.sh
+  "pythondemo":
+    Path: plugins/samples/pythondemo.py
 ExternalJobs:
   "cloud9wks":
     Description: Job to launch a Cloud9 Instance
