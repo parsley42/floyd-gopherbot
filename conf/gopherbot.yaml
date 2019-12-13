@@ -21,6 +21,8 @@ Brain: dynamo
 BrainConfig:
   TableName: Floyd
   Region: "us-east-1"
+  AccessKeyID: {{ decrypt "kD4iLTHLi6Ewx04fi6VlXEEWN5w7dw4huKQtu9hq+Xr3CFVI/SQfO9Ogv11eB+l1" }}
+  SecretAccessKey: {{ decrypt "LpBD9C4SGA2clBY8xy6PPAOnMUo1A9WFMh+E/n6HKad4eJRwje+rDV1x+UIeyD2CWbanZQMptw2UAagsD3sRD4/I19A=" }}
 EncryptBrain: true
 
 # The administrator of this robot, can be retrieved in plugins with
