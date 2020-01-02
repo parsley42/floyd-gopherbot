@@ -11,10 +11,21 @@ Protocol: {{ $proto }}
 # a list of user handles / nicks.
 AdminUsers: [ "parsley", "adrienne" ]
 ProtocolConfig:
+  SlackToken: xoxb-37291947428-{{ decrypt "sHHcBr5tLKAWPH51O9UK3nExGIq37JqqIMB0oZiI9+yKgD3d6zstmI3Y5PURc3Yvj7WBug==" }}
   MaxMessageSplit: 2
+UserRoster:
+  # Clu is the dev bot on my laptop
+  - UserName: clu
+    UserID: UDV39JHT6
+    BotUser: true
+  - UserName: parsley
+    UserID: U0JLW8EMS
 {{ end }}
 
 LoadableModules:
+  "duo":
+    Description: Duo two-factor elevator plugin
+    Path: goplugins/duo.so
   "dynamo":
     Description: Brain using AWS DynamoDB for the key-value store
     Path: brains/dynamodb.so
@@ -28,6 +39,23 @@ BrainConfig:
   SecretAccessKey: {{ decrypt "LpBD9C4SGA2clBY8xy6PPAOnMUo1A9WFMh+E/n6HKad4eJRwje+rDV1x+UIeyD2CWbanZQMptw2UAagsD3sRD4/I19A=" }}
 EncryptBrain: true
 
+# Defaults for history and workspace directories, relative to the
+# process working directory.
+{{ $histdir := env "GOPHER_HISTORY_DIRECTORY" | default "history" }}
+{{ $workdir := env "GOPHER_WORKSPACE_DIRECTORY" | default "workspace" }}
+{{ if $workdir -}} WorkSpace: {{ $workdir }} {{- end }}
+
+## Configure a history provider
+{{ $history := env "GOPHER_HISTORY_PROVIDER" | default "file" }}
+HistoryProvider: {{ $history }}
+
+{{ if eq $history "file" }}
+HistoryConfig:
+  Directory: {{ $histdir }}
+  #URLPrefix: 'http://localhost:9000'
+{{ end }}
+## End history config
+
 # The administrator of this robot, can be retrieved in plugins with
 # GetBotAttribute("admin")
 AdminContact: "David Parsley, <parsley@linuxjedi.org>"
@@ -39,18 +67,6 @@ BotInfo:
   FirstName: Floyd
   LastName: Gopherbot
 
-UserRoster:
-# Clu is the dev bot on my laptop
-- UserName: clu
-  UserID: UDV39JHT6
-  BotUser: true
-
-MailConfig:
-  Mailhost: smtp.gmail.com:587
-  Authtype: plain
-  User: floyd@linuxjedi.org
-  Password: {{ decrypt "vezuay3EVKr//JaD8bx/Hp0ZXk2rCuoS2c4Ms4PossteRMCu5omrUY1gpJY=" }}
-
 # If a plugin doesn't specify otherwise it will be active in these channels;
 # defaults to all channels
 DefaultChannels: [ "general", "random", "chat", "botdev" ]
@@ -59,6 +75,16 @@ DefaultChannels: [ "general", "random", "chat", "botdev" ]
 # are supported. If your robot doesn't respond to e.g. ";ping", try changing
 # the Alias to something other than ";". Popular alternatives: ":", "!", "*".
 Alias: ";"
+
+GoPlugins:
+  "duo":
+    Parameters:
+    - Name: HOST
+      Value: {{ decrypt "Iye0dd+1i324dSn9v+beKHX/oXFNI6evORRq+Le8GhqYptpwK84OtorO53fnO33gIrPmIQw2Yjo=" }}
+    - Name: IKEY
+      Value: {{ decrypt "MgPRFDAx7nV88eJ5GqamylWgrlh2RfX+x2EtjdIV/mEHl7aSZd/5ciBFpWarv2Qi" }}
+    - Name: SKEY
+      Value: {{ decrypt "R+0uA2oUUtDUUHx5++eM0CWAm+czESZ5E/dL/d2fPFSi7jcwnablyLK905TIg025ex9YLoUVuIWfqUSGKxBtwD1fzQg=" }}
 
 # List of external plugins/jobs to configure; generally scripts using a gopherbot
 # script library. The robot will look for plugins in the installation directory
@@ -115,6 +141,11 @@ ExternalTasks:
     - Name: KEYNAME
       Value: floyd
 # /Floyd job tasks
+NameSpaces:
+  "ssh":
+    Parameters:
+    - Name: BOT_SSH_PHRASE
+      Value: {{ decrypt "kB8L7FJuQi4ovUKX09CITRr1ij2NCSg+vBUyC1+ER4DVRHg3Z2+S28qjzCdk9OOR7Al6IA/PnoI=" }}
 
 # If a job doesn't specify otherwise, this is the channel where it runs
 DefaultJobChannel: floyd-jobs
@@ -134,12 +165,6 @@ DefaultMessageFormat: Raw
 # Users the bot should never listen to
 #IgnoreUsers: [ "otherbot", "slackbot" ]
 
-# Initial log level, one of trace, debug, info, warn, error. See 'help log'
-# for help on changing the log level and viewing contents of the log.
-#LogLevel: info
-#LogLevel: trace
-LogLevel: debug
-
 # The robot's email address (used in From:)
 #Email: robbie@robot.com
 # Configuration for sending out email. For Authtype: none, User and Password
@@ -149,5 +174,11 @@ LogLevel: debug
 #  Authtype: <plain|none>
 #  User: <authuser>
 #  Password: <password>
+
+MailConfig:
+  Mailhost: smtp.gmail.com:587
+  Authtype: plain
+  User: floyd@linuxjedi.org
+  Password: {{ decrypt "vezuay3EVKr//JaD8bx/Hp0ZXk2rCuoS2c4Ms4PossteRMCu5omrUY1gpJY=" }}
 
 DefaultElevator: duo

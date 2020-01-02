@@ -1,30 +1,34 @@
 # repositories.yaml - Gopherbot's list of repositories that are valid for extending the namespace
 github.com/parsley42/aws-devel:
-  type: none
+  Type: none
 bitbucket.org/lnxjedi/linuxjedi-private:
-  type: none
+  Type: none
 github.com/parsley42/aws-linuxjedi:
-  type: none
+  Type: none
 github.com/parsley42/deploy-gopherbot:
-  type: none
+  Type: none
 github.com/lnxjedi/gopherbot:
-  type: localbuild
-  clone_url: https://github.com/lnxjedi/gopherbot.git
-  keep_history: 14
+  Type: localbuild
+  CloneURL: https://github.com/lnxjedi/gopherbot.git
+  KeepHistory: 14
   Parameters:
   - Name: NOTIFY_USER
     Value: parsley
+  - Name: DOCKER_TRIGGER
+    Value: {{ decrypt "Nm00gWLxjPB7LIjWFwrs5o1x3E8dLON5z5xeVijIyiujVuGdhSPM+rR5Spj6ZVVdhJxUhsEyrkiz3vvMYxH+Laum8B41FAXFLxwdC5kYaNSNcOZU4vtFth8bQbPv6Zjewt/Dzk+e6bnOVZDEBMCLD2j/IJL2MBjc10JhnrwyEVboYvcQkfb8" }}
+  - Name: GITHUB_RELEASE_ACCESS_TOKEN
+    Value: {{ decrypt "99Ry93Jihlvhj8lfPXzseJArXd+8kpMrcaLzJAY0mgKvV85tYetqCWSBsllZkqF9VyVt92lKdGF8Fm7l7wU4folAnm4=" }}
 github.com/parsley42/gopherbot:
-  type: localbuild
-  clone_url: https://github.com/parsley42/gopherbot.git
-  keep_history: 14
+  Type: localbuild
+  CloneURL: https://github.com/parsley42/gopherbot.git
+  KeepHistory: 14
   Parameters:
   - Name: NOTIFY_USER
     Value: parsley
 github.com/lnxjedi/luminos:
-  type: localbuild
-  clone_url: https://github.com/lnxjedi/luminos.git
-  keep_history: 14
+  Type: localbuild
+  CloneURL: https://github.com/lnxjedi/luminos.git
+  KeepHistory: 14
   Parameters:
   - Name: NOTIFY_USER
     Value: parsley
