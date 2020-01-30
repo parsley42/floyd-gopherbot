@@ -104,9 +104,6 @@ ExternalPlugins:
   "pythondemo":
     Path: plugins/samples/pythondemo.py
 ExternalJobs:
-  "git-clone":
-    Description: For compatibility, short-term
-    Path: jobs/git-sync.sh
   "cloud9wks":
     Description: Job to launch a Cloud9 Instance
     Path: jobs/c9wks.sh
@@ -130,6 +127,9 @@ ExternalJobs:
     - Name: AWS_REGION
       Value: us-east-1
 ExternalTasks:
+  "git-clone":
+    Description: For compatibility, short-term
+    Path: tasks/git-sync.sh
 # Floyd job tasks
   "build-c9wks":
     Description: Task that launches and configures the Cloud9 instance
