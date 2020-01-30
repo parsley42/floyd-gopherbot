@@ -104,6 +104,9 @@ ExternalPlugins:
   "pythondemo":
     Path: plugins/samples/pythondemo.py
 ExternalJobs:
+  "git-clone":
+    Description: For compatibility, short-term
+    Path: jobs/git-sync.sh
   "cloud9wks":
     Description: Job to launch a Cloud9 Instance
     Path: jobs/c9wks.sh
