@@ -127,9 +127,6 @@ ExternalJobs:
     - Name: AWS_REGION
       Value: us-east-1
 ExternalTasks:
-  "git-clone":
-    Description: For compatibility, short-term
-    Path: tasks/git-sync.sh
 # Floyd job tasks
   "build-c9wks":
     Description: Task that launches and configures the Cloud9 instance
