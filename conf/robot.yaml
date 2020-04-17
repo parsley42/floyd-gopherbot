@@ -144,6 +144,8 @@ ExternalTasks:
 NameSpaces:
   "ssh":
     Parameters:
+    - Name: KEYNAME
+      Value: "robot_rsa"
     - Name: BOT_SSH_PHRASE
       Value: {{ decrypt "kB8L7FJuQi4ovUKX09CITRr1ij2NCSg+vBUyC1+ER4DVRHg3Z2+S28qjzCdk9OOR7Al6IA/PnoI=" }}
 
