@@ -155,7 +155,9 @@ DefaultJobChannel: floyd-jobs
 # Timezone for scheduled jobs
 TimeZone: "America/New_York"
 # Job scheduling with github.com/robfig/cron
-# ScheduledTasks:
+ScheduledJobs:
+- Name: "pause-notifies"
+  Schedule: "0 0 8 * * *"
 # - Name: hello
 #   Schedule: "@every 5m" # see: https://godoc.org/github.com/robfig/cron
 #   Arguments: # an array of strings; up to the job to parse numbers & bools
