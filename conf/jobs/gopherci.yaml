@@ -1,5 +1,5 @@
 ---
-HistoryLogs: 14
+KeepLogs: 14
 Quiet: true
 Triggers:
 - User: github

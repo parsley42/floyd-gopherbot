@@ -1,7 +1,7 @@
 ---
 RequireAdmin: true
 AllowDirect: true
-HistoryLogs: 7
+KeepLogs: 7
 Quiet: true # The reload plugin provides feedback
 Triggers:
 - User: github
