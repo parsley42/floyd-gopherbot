@@ -9,13 +9,14 @@ shift
 
 configure(){
   cat <<"EOF"
-Users: [ 'parsley' ]
 AllowDirect: true
 Help:
 - Keywords: [ "wake", "bender" ]
   Helptext: [ "(bot), wake bender - get Bender up and running for development" ]
 - Keywords: [ "code", "program" ]
   Helptext: [ "(bot), start workstation - launch a Cloud9 developer spot instance" ]
+- Keywords: [ "dinner" ]
+  Helptext: [ "(bot), dinner? - pick random dinner meals" ]
 CommandMatchers:
 - Command: "wake"
   Regex: '(?i:wake bender)'
@@ -23,6 +24,8 @@ CommandMatchers:
   Regex: '(?i:start (?:coding|workstation))'
 - Command: "dinner"
   Regex: "(?i:(what's for )?dinner\\??)"
+- Command: "moredinner"
+  Regex: "more dinner please"
 EOF
 }
 
@@ -44,5 +47,21 @@ case "$COMMAND" in
     ;;
   "dinner")
     AddCommand lists "pick a random item from the dinner meals list"
+    AddCommand util "more dinner please"
     ;;
+  "moredinner")
+    MORE=$(PromptForReply YesNo "Pick another?")
+    RETVAL=$?
+    if [ $RETVAL -eq $GBRET_Ok ]
+    then
+      case $MORE in
+        y | Y | Yes | yes)
+          AddCommand lists "pick a random item from the dinner meals list"
+          AddCommand util "more dinner please"
+          ;;
+        *)
+          Say "Bon Apetit!"
+          ;;
+      esac
+    fi
 esac
