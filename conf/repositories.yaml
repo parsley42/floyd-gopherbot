@@ -8,7 +8,8 @@ github.com/parsley42/aws-linuxjedi:
 github.com/parsley42/deploy-gopherbot:
   Type: none
 github.com/lnxjedi/gopherbot:
-  Type: localbuild
+  #Type: localbuild
+  Type: none
   CloneURL: https://github.com/lnxjedi/gopherbot.git
   KeepLogs: 14
   Parameters:
@@ -19,7 +20,8 @@ github.com/lnxjedi/gopherbot:
   - Name: GITHUB_RELEASE_ACCESS_TOKEN
     Value: {{ decrypt "99Ry93Jihlvhj8lfPXzseJArXd+8kpMrcaLzJAY0mgKvV85tYetqCWSBsllZkqF9VyVt92lKdGF8Fm7l7wU4folAnm4=" }}
 github.com/parsley42/gopherbot:
-  Type: localbuild
+  #Type: localbuild
+  Type: none
   CloneURL: https://github.com/parsley42/gopherbot.git
   KeepLogs: 14
   Parameters:
