@@ -110,6 +110,8 @@ ExternalJobs:
     Parameters:
     - Name: AWS_REGION
       Value: us-east-1
+  "backup":
+    Disabled: true
   "bender":
     Description: Job to launch a spot instance for Bender and configure it
     Path: jobs/bender.sh
