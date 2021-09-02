@@ -50,9 +50,7 @@ case "$COMMAND" in
     AddCommand util "more dinner please"
     ;;
   "moredinner")
-    MORE=$(PromptForReply YesNo "Pick another?")
-    RETVAL=$?
-    if [ $RETVAL -eq $GBRET_Ok ]
+    if MORE=$(PromptForReply YesNo "Pick another?")
     then
       case $MORE in
         y | Y | Yes | yes)
@@ -63,5 +61,7 @@ case "$COMMAND" in
           Say "Bon Apetit!"
           ;;
       esac
+    else
+      Say "Ok then, ttyl!"
     fi
 esac
