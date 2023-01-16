@@ -22,14 +22,6 @@ UserRoster:
     UserID: U0JLW8EMS
 {{ end }}
 
-LoadableModules:
-  "duo":
-    Description: Duo two-factor elevator plugin
-    Path: goplugins/duo.so
-  "dynamo":
-    Description: Brain using AWS DynamoDB for the key-value store
-    Path: brains/dynamodb.so
-
 # Specify the mechanism for storing the robots memories.
 Brain: dynamo
 BrainConfig:
