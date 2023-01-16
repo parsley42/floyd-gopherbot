@@ -11,7 +11,9 @@ Protocol: {{ $proto }}
 # a list of user handles / nicks.
 AdminUsers: [ "parsley", "adrienne" ]
 ProtocolConfig:
-  SlackToken: xoxb-37291947428-{{ decrypt "sHHcBr5tLKAWPH51O9UK3nExGIq37JqqIMB0oZiI9+yKgD3d6zstmI3Y5PURc3Yvj7WBug==" }}
+  AppToken: xapp-{{ decrypt "sSb5yQGaOs0ekbUzv51xJzyuusyV7Ol3e4+EzpO2lsYBp/XKRe8z5xi5PiWVe7qTWOdLendssmJWv7brTqtXAivMXUGcwg+VFZY5QWY8hJXl58HCaMlpmlUMSqfg/Atoqli6MzTOPk9BjV5hyhNgvH3Wdovj9olN" }}
+  BotToken: xoxb-{{ decrypt "Y13OyHeixFRTbXaazv4yBQ4n1PL6XIQ1Rwl03H2XFMQifegrbSt269cTmlYD173lIM7kFrgx/DpZ5zOT/TjWrfo8/kZZJpj+8tbK3+Oi" }}
+  #SlackToken: xoxb-37291947428-{{ decrypt "sHHcBr5tLKAWPH51O9UK3nExGIq37JqqIMB0oZiI9+yKgD3d6zstmI3Y5PURc3Yvj7WBug==" }}
   MaxMessageSplit: 2
 UserRoster:
   # Clu is the dev bot on my laptop
