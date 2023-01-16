@@ -1,0 +1,35 @@
+AdminUsers: [ "alice", "parse" ]
+
+DefaultChannels: [ "general", "random", "chat", "botdev", "floyd-jobs" ]
+DefaultJobChannel: "floyd-jobs"
+ProtocolConfig:
+  EOF: ";quit"
+  Abort: ";abort"
+  HearSelf: true
+  BotName: 'floyd'
+  StartChannel: floyd-jobs
+  StartUser: parse
+  Channels:
+  - ai
+  - random
+  - general
+  - chat
+  - floyd-jobs
+  - botdev
+  - ruby
+  - python
+  AppendUsers:
+  - Name: "parse"
+    Email: "parsley@linuxjedi.org"
+    InternalID: "u0007"
+    FullName: "David Parsley"
+    FirstName: "David"
+    LastName: "Parsley"
+    Phone: "(555)765-0007"
+
+AppendUserRoster:
+- UserName: "parse"
+  UserID: "u0007"
+- UserName: "floyd"
+  UserID: "u0000"
+  BotUser: true

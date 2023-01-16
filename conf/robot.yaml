@@ -2,27 +2,14 @@
 # for development.
 
 # Port to listen on for http/JSON api calls, for external plugins
-LocalPort: 8888
+#LocalPort: 8888
+IgnoreUnlistedUsers: true
 
 {{ $proto := env "GOPHER_PROTOCOL" | default "slack" }}
 Protocol: {{ $proto }}
-{{ if eq $proto "slack" }}
-# List of users that can issue admin commands like reload, quit. Should be
-# a list of user handles / nicks.
-AdminUsers: [ "parsley", "adrienne" ]
-ProtocolConfig:
-  AppToken: xapp-{{ decrypt "sSb5yQGaOs0ekbUzv51xJzyuusyV7Ol3e4+EzpO2lsYBp/XKRe8z5xi5PiWVe7qTWOdLendssmJWv7brTqtXAivMXUGcwg+VFZY5QWY8hJXl58HCaMlpmlUMSqfg/Atoqli6MzTOPk9BjV5hyhNgvH3Wdovj9olN" }}
-  BotToken: xoxb-{{ decrypt "Y13OyHeixFRTbXaazv4yBQ4n1PL6XIQ1Rwl03H2XFMQifegrbSt269cTmlYD173lIM7kFrgx/DpZ5zOT/TjWrfo8/kZZJpj+8tbK3+Oi" }}
-  #SlackToken: xoxb-37291947428-{{ decrypt "sHHcBr5tLKAWPH51O9UK3nExGIq37JqqIMB0oZiI9+yKgD3d6zstmI3Y5PURc3Yvj7WBug==" }}
-  MaxMessageSplit: 2
-UserRoster:
-  # Clu is the dev bot on my laptop
-  - UserName: clu
-    UserID: UDV39JHT6
-    BotUser: true
-  - UserName: parsley
-    UserID: U0JLW8EMS
-{{ end }}
+
+## Protocol-specific configuration
+{{ printf "%s.yaml" $proto | .Include }}
 
 # Specify the mechanism for storing the robots memories.
 Brain: dynamo
@@ -92,6 +79,12 @@ ExternalPlugins:
       Value: imperial # or 'metric'
     - Name: DEFAULT_COUNTRY
       Value: 'us' # or other ISO 3166 country code
+  "ai":
+    Path: plugins/ai.rb
+    Description: A trivial plugin wrapping the OpenAI completions API
+    Parameters:
+    - Name: OPENAI_KEY
+      Value: sk-{{ decrypt "hSD5nNQuEWccJWo0S81IoKH6PRBbi70TLUkcf4aH/ivsvbnzAAlo4F+2xL6LZ5pm0iTTh3AbTVGf2G+z8UomklXlrryWSeGwB/D49w==" }}
   "util":
     Description: A convenience plugin for various tasks
     Path: plugins/util.sh
