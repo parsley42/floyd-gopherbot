@@ -59,21 +59,19 @@ class AIPrompt
     end
 
     def query(input)
-        aitext = "Profile #{@profile} and query: #{input} with key: #{ENV["OPENAI_KEY"]}"
-        # response = @client.completions(parameters: {
-        #     model: @model,
-        #     prompt: input,
-        #     temperature: @temperature,
-        #     max_tokens: @max_tokens,
-        #     n: @responses,
-        #     top_p: @word_probability,
-        #     frequency_penalty: @frequency_penalty,
-        #     presence_penalty: @presence_penalty,
-        #     # num_beams: @num_beams,
-        # })
-        # # pp(response)
-        # aitext = response["choices"][0]["text"].lstrip
-        require "debug/open"
+        # aitext = "Profile #{@profile} and query: #{input} with key: #{ENV["OPENAI_KEY"]}"
+        response = @client.completions(parameters: {
+            model: @model,
+            prompt: input,
+            temperature: @temperature,
+            max_tokens: @max_tokens,
+            n: @responses,
+            top_p: @word_probability,
+            frequency_penalty: @frequency_penalty,
+            presence_penalty: @presence_penalty,
+            # num_beams: @num_beams,
+        })
+        aitext = response["choices"][0]["text"].lstrip
         @bot.Say(aitext)
     end
 end
