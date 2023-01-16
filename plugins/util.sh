@@ -30,9 +30,12 @@ EOF
 }
 
 case "$COMMAND" in
-	"configure")
-		configure
-		;;
+  "init")
+    SendChannelMessage "general" "Floyd here now!"
+    ;;
+  "configure")
+    configure
+    ;;
   "code")
     Say "Ok, I'll start the 'cloud9wks' job and let you know when your workstation is ready..."
     AddJob cloud9wks
