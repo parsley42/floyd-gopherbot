@@ -16,12 +16,15 @@ Help:
   Helptext:
   - "(bot), prompt <query> - Send a query to the OpenAI LLM"
   - "(bot), add-token - Add your personal OpenAI token (robot will prompt you in a DM)"
+  - "(bot), remove-token - Remove your personal OpenAI token"
   - "<query> - Send a query to the OpenAI LLM (all messages)"
 CommandMatchers:
 - Command: 'prompt'
   Regex: '(?i:(?:prompt|query)(?:=([\w-]+))? (.*))'
 - Command: 'token'
   Regex: '(?i:(?:link|add|set)[ -]token)'
+- Command: 'rmtoken'
+  Regex: '(?i:(?:rm|remove|unlink|delete|unset)[ -]token)'
 MessageMatchers:
 - Command: 'ambient'
   Regex: '(.*)'
@@ -41,7 +44,7 @@ require 'json'
 require 'base64'
 
 class AIPrompt
-  attr_reader :authenticated
+  attr_reader :valid, :error
 
   TokenMemory = "usertokens"
 
@@ -53,10 +56,14 @@ class AIPrompt
     @bot = bot.Threaded
     @profile = profile
     @exchanges = []
+    @valid = true
     if bot.threaded_message
       conversation = bot.Recall(bot.thread_id)
       if conversation.length > 0
         @exchanges = decode(conversation)
+      else
+        @valid = false
+        @error = "Sorry, I've forgotten what we were talking about (that, or this conversation belongs to somebody else)"
       end
     end
     case @profile
@@ -81,10 +88,10 @@ class AIPrompt
       }
     end
     token = get_token()
-    if token and token.length > 0
-      @authenticated = true
-    else
-      @authenticated = false
+    unless token and token.length > 0
+      @valid = false
+      botalias = @bot.GetBotAttribute("alias")
+      @error = "Sorry, you need to add your token first - try '#{botalias}help'"
     end
     Ruby::OpenAI.configure do |config|
       config.access_token = token
@@ -199,9 +206,8 @@ when "ambient", "prompt"
     profile, prompt = ARGV.shift(2)
   end
   ai = AIPrompt.new(bot, profile)
-  unless ai.authenticated
-    botalias = bot.GetBotAttribute("alias")
-    bot.SayThread("Sorry, you need to add your token first - try '#{botalias}help'")
+  unless ai.valid
+    bot.SayThread(ai.error)
     exit(0)
   end
   unless bot.threaded_message
@@ -223,4 +229,19 @@ when "token"
   tokens[bot.user] = token
   bot.UpdateDatum(token_memory)
   bot.SayThread("Ok, I stored your personal OpenAI token")
+when "rmtoken"
+  token_memory = bot.CheckoutDatum(AIPrompt::TokenMemory, true)
+  if not token_memory.exists
+      bot.SayThread("I don't see any tokens linked")
+      bot.CheckinDatum(token_memory)
+      exit
+  end
+  tokens = token_memory.datum
+  if tokens[bot.user]
+    tokens.delete(bot.user)
+    bot.UpdateDatum(token_memory)
+    bot.SayThread("Removed")
+    exit
+  end
+  bot.SayThread("I don't see a token for you")
 end
