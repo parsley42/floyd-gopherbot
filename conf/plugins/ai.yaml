@@ -1,6 +1,7 @@
 ---
 Channels:
 - ai
+AllowDirect: false
 Help:
 - Keywords: [ "ai", "prompt", "query" ]
   Helptext:
@@ -8,3 +9,6 @@ Help:
 CommandMatchers:
 - Command: 'prompt'
   Regex: '(?i:(?:prompt|query)(?:=([\w-]+))? (.*))'
+MessageMatchers:
+- Command: 'prompt'
+  Regex: '(.*)'
