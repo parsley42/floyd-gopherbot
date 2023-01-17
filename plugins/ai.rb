@@ -171,5 +171,8 @@ when "ambient", "prompt"
     profile, prompt = ARGV.shift(2)
   end
   ai = AIPrompt.new(bot, profile)
+  unless bot.threaded_message
+    bot.Say("(please hold while I ask the AI)")
+  end
   ai.query(prompt)
 end
