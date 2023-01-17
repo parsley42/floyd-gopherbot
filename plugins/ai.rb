@@ -51,6 +51,8 @@ class AIPrompt
     end
     @bot = bot
     @profile = profile
+    @exchanges = nil
+
     case @profile
     when "davinci-std"
       @model = "text-davinci-003"
@@ -61,6 +63,7 @@ class AIPrompt
       @word_probability = 0.7  # top_p
       @frequency_penalty = 0.2
       @presence_penalty = 0.4
+      @stop = [" Human:", "AI:"]
       @num_beams = 7           # unused?
     end
     Ruby::OpenAI.configure do |config|
@@ -68,28 +71,33 @@ class AIPrompt
       # config.organization_id = ENV.fetch('OPENAI_ORGANIZATION_ID') # Optional.
     end
     @client = OpenAI::Client.new
+    @exchanges = [{
+      "human" => "Who are you?",
+      "ai" => "Hi, I'm your AI mentor. I'm here to provide advice and instruction on coding. How can I help you?"
+    }]
   end
 
   def query(input)
     # aitext = "Profile #{@profile} and query: #{input} with key: #{ENV["OPENAI_KEY"]}"
-    response = @client.completions(parameters: {
-      model: @model,
-      prompt: input,
-      temperature: @temperature,
-      max_tokens: @max_tokens,
-      n: @responses,
-      top_p: @word_probability,
-      frequency_penalty: @frequency_penalty,
-      presence_penalty: @presence_penalty,
-      # num_beams: @num_beams,
-    })
-    aitext = response["choices"][0]["text"].lstrip
+    # response = @client.completions(parameters: {
+    #   model: @model,
+    #   prompt: input,
+    #   temperature: @temperature,
+    #   max_tokens: @max_tokens,
+    #   n: @responses,
+    #   top_p: @word_probability,
+    #   frequency_penalty: @frequency_penalty,
+    #   presence_penalty: @presence_penalty,
+    #   # num_beams: @num_beams,
+    # })
+    # aitext = response["choices"][0]["text"].lstrip
     @bot.Say(aitext)
   end
 end
 
 case command
 when "prompt"
+  pp(ENV)
   profile, prompt = ARGV.shift(2)
   ai = AIPrompt.new(bot.Threaded, profile)
   ai.query(prompt)
