@@ -12,13 +12,16 @@ Channels:
 - ai
 AllowDirect: false
 Help:
-- Keywords: [ "ai", "prompt", "query" ]
+- Keywords: [ "ai", "prompt", "query", "token" ]
   Helptext:
   - "(bot), prompt <query> - Send a query to the OpenAI LLM"
+  - "(bot), add-token - Add your personal OpenAI token (robot will prompt you in a DM)"
   - "<query> - Send a query to the OpenAI LLM (all messages)"
 CommandMatchers:
 - Command: 'prompt'
   Regex: '(?i:(?:prompt|query)(?:=([\w-]+))? (.*))'
+- Command: 'token'
+  Regex: '(?i:(?:link|add|set)[ -]token)'
 MessageMatchers:
 - Command: 'ambient'
   Regex: '(.*)'
@@ -38,6 +41,10 @@ require 'json'
 require 'base64'
 
 class AIPrompt
+  attr_reader :authenticated
+
+  TokenMemory = "usertokens"
+
   def initialize(bot, profile)
     # We don't default the var because it could be just set to a zero-length string ("")
     unless profile and profile.length > 0
@@ -73,11 +80,32 @@ class AIPrompt
         "ai" => "I am an AI created by OpenAI. How can I help you?"
       }
     end
+    token = get_token()
+    if token and token.length > 0
+      @authenticated = true
+    else
+      @authenticated = false
+    end
     Ruby::OpenAI.configure do |config|
-      config.access_token = ENV.fetch('OPENAI_KEY')
+      config.access_token = token
       # config.organization_id = ENV.fetch('OPENAI_ORGANIZATION_ID') # Optional.
     end
     @client = OpenAI::Client.new
+  end
+
+  def get_token
+    token = nil
+    token_memory = @bot.CheckoutDatum(TokenMemory, false)
+    if token_memory.exists
+      token = token_memory.datum[@bot.user]
+      @bot.Log(:info, "Using personal token for #{@bot.user}") if token
+    end
+    unless token
+      token = ENV['OPENAI_KEY']
+      @bot.Log(:info, "Using global token for #{@bot.user}") if token
+    end
+    @bot.Log(:error, "No OpenAI token found for request from user #{@bot.user}")
+    return token
   end
 
   def encode(array_of_hashes)
@@ -171,8 +199,28 @@ when "ambient", "prompt"
     profile, prompt = ARGV.shift(2)
   end
   ai = AIPrompt.new(bot, profile)
+  unless ai.authenticated
+    botalias = bot.GetBotAttribute("alias")
+    bot.SayThread("Sorry, you need to add your token first - try '#{botalias}help'")
+    exit(0)
+  end
   unless bot.threaded_message
     bot.SayThread("(please hold while I ask the AI)")
   end
   ai.query(prompt)
+when "token"
+  rep = bot.PromptUserForReply("SimpleString", "OpenAI token?")
+  unless rep.ret == Robot::Ok
+    bot.SayThread("I had a problem getting your token")
+    exit
+  end
+  token = rep.to_s
+  token_memory = bot.CheckoutDatum(AIPrompt::TokenMemory, true)
+  if not token_memory.exists
+      token_memory.datum = {}
+  end
+  tokens = token_memory.datum
+  tokens[bot.user] = token
+  bot.UpdateDatum(token_memory)
+  bot.SayThread("Ok, I stored your personal OpenAI token")
 end
