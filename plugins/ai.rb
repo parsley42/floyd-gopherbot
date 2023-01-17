@@ -6,42 +6,36 @@ bot = Robot.new()
 
 command = ARGV.shift()
 
+defaultConfig = <<'DEFCONFIG'
+---
+Channels:
+- ai
+AllowDirect: false
+Help:
+- Keywords: [ "ai", "prompt", "query" ]
+  Helptext:
+  - "(bot), prompt <query> - Send a query to the OpenAI LLM"
+  - "<query> - Send a query to the OpenAI LLM (all messages)"
+CommandMatchers:
+- Command: 'prompt'
+  Regex: '(?i:(?:prompt|query)(?:=([\w-]+))? (.*))'
+MessageMatchers:
+- Command: 'ambient'
+  Regex: '(.*)'
+DEFCONFIG
+
 case command
 when "init"
   system("gem install --user-install --no-document ruby-openai")
   exit(0)
 when "configure"
+  puts(defaultConfig)
   exit(0)
 end
-
-defaultConfig = <<'DEFCONFIG'
-MessageMatchers:
-- Command: chuck
-  Regex: '(?i:chuck norris)'
-Config:
-  Openings:
-  - "Chuck Norris?!?! He's AWESOME!!!"
-  - "Oh cool, you like Chuck Norris, too?"
-  - "Speaking of Chuck Norris - "
-  - "Hey, I know EVERYTHING about Chuck Norris!"
-  - "I'm a HUUUUGE Chuck Norris fan!"
-  - "Not meaning to eavesdrop or anything, but are we talking about CHUCK NORRIS ?!?"
-  - "Oh yeah, Chuck Norris! The man, the myth, the legend."
-DEFCONFIG
 
 require "ruby/openai"
 require 'json'
 require 'base64'
-
-def encode(array_of_hashes)
-  json = array_of_hashes.to_json
-  Base64.strict_encode64(json)
-end
-
-def decode(encoded_json)
-  json = Base64.strict_decode64(encoded_json)
-  JSON.parse(json)
-end
 
 class AIPrompt
   def initialize(bot, profile)
@@ -49,10 +43,15 @@ class AIPrompt
     unless profile and profile.length > 0
       profile = "davinci-std"
     end
-    @bot = bot
+    @bot = bot.Threaded
     @profile = profile
-    @exchanges = nil
-
+    @exchanges = []
+    if bot.threaded_message
+      conversation = bot.Recall(bot.thread_id)
+      if conversation.length > 0
+        @exchanges = decode(conversation)
+      end
+    end
     case @profile
     when "davinci-std"
       @model = "text-davinci-003"
@@ -63,42 +62,114 @@ class AIPrompt
       @word_probability = 0.7  # top_p
       @frequency_penalty = 0.2
       @presence_penalty = 0.4
-      @stop = [" Human:", "AI:"]
+      @user_string = "Human:"
+      @ai_string = "AI:"
+      @max_tokens = 1001
+      @max_input = 3997 - @max_tokens
+      @stop = [ @user_string, @ai_string]
       @num_beams = 7           # unused?
+      @initial = {
+        "human" => "Who are you?",
+        "ai" => "I am an AI created by OpenAI. How can I help you?"
+      }
     end
     Ruby::OpenAI.configure do |config|
       config.access_token = ENV.fetch('OPENAI_KEY')
       # config.organization_id = ENV.fetch('OPENAI_ORGANIZATION_ID') # Optional.
     end
     @client = OpenAI::Client.new
-    @exchanges = [{
-      "human" => "Who are you?",
-      "ai" => "Hi, I'm your AI mentor. I'm here to provide advice and instruction on coding. How can I help you?"
-    }]
+  end
+
+  def encode(array_of_hashes)
+    json = array_of_hashes.to_json
+    Base64.strict_encode64(json)
+  end
+
+  def decode(encoded_json)
+    json = Base64.strict_decode64(encoded_json)
+    JSON.parse(json)
+  end
+
+  def count_tokens(str)
+    count = str.scan(/\w+|[^\s\w]+/s).length
+    count += str.count("\n")
+  end
+
+  def exchange_string(exchange)
+    return "#{@user_string} #{exchange["human"]}\n#{@ai_string} #{exchange["ai"]}\n"
+  end
+
+  def build_prompt(input)
+    initial = exchange_string(@initial)
+    prompt = String.new
+    final = nil
+    truncated = false
+    current_length = count_tokens(initial)
+    if input.length > 0
+      final = "Human: #{input}\nAI:"
+      current_length += count_tokens(final)
+    end
+    exchanges = []
+    @exchanges.reverse_each do |exchange|
+      exchange_string = exchange_string(exchange)
+      size = count_tokens(exchange_string)
+      if current_length + size > @max_input
+        truncated = true
+        break
+      end
+      exchanges.unshift(exchange)
+      current_length += size
+      prompt = exchange_string + prompt
+    end
+    @exchanges = exchanges
+    prompt = initial + prompt
+    if final
+      prompt += final
+    end
+    return prompt, current_length, truncated
   end
 
   def query(input)
-    # aitext = "Profile #{@profile} and query: #{input} with key: #{ENV["OPENAI_KEY"]}"
-    # response = @client.completions(parameters: {
-    #   model: @model,
-    #   prompt: input,
-    #   temperature: @temperature,
-    #   max_tokens: @max_tokens,
-    #   n: @responses,
-    #   top_p: @word_probability,
-    #   frequency_penalty: @frequency_penalty,
-    #   presence_penalty: @presence_penalty,
-    #   # num_beams: @num_beams,
-    # })
-    # aitext = response["choices"][0]["text"].lstrip
+    prompt, tokens, truncated = build_prompt(input)
+    @bot.Log(:info, "Using prompt with #{tokens} tokens; truncated: #{truncated}")
+    if @bot.channel == "mock" and @bot.protocol == "terminal"
+      puts("DEBUG full prompt:\n#{prompt}")
+    end
+    if @bot.channel == "mock"
+      aitext = "Profile #{@profile} and query: #{input} in channel: #{@bot.channel}"
+    else
+      response = @client.completions(parameters: {
+        model: @model,
+        prompt: input,
+        temperature: @temperature,
+        max_tokens: @max_tokens,
+        n: @responses,
+        top_p: @word_probability,
+        frequency_penalty: @frequency_penalty,
+        presence_penalty: @presence_penalty,
+        # num_beams: @num_beams,
+      })
+      aitext = response["choices"][0]["text"].lstrip
+    end
+    if input.length > 0
+      @exchanges << {
+        "human" => input,
+        "ai" => aitext
+      }
+    end
+    @bot.Remember(@bot.thread_id, encode(@exchanges))
     @bot.Say(aitext)
   end
 end
 
 case command
-when "prompt"
-  pp(ENV)
-  profile, prompt = ARGV.shift(2)
-  ai = AIPrompt.new(bot.Threaded, profile)
+when "ambient", "prompt"
+  if command == "ambient"
+    profile = ""
+    prompt = ARGV.shift
+  else
+    profile, prompt = ARGV.shift(2)
+  end
+  ai = AIPrompt.new(bot, profile)
   ai.query(prompt)
 end

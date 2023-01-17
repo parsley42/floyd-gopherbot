@@ -11,6 +11,7 @@ ProtocolConfig:
   StartUser: parse
   Channels:
   - ai
+  - mock
   - random
   - general
   - chat

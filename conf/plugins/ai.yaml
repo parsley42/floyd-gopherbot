@@ -1,14 +1,3 @@
 ---
-Channels:
-- ai
-AllowDirect: false
-Help:
-- Keywords: [ "ai", "prompt", "query" ]
-  Helptext:
-  - "(bot), prompt <query> - Send a query to the OpenAI LLM"
-CommandMatchers:
-- Command: 'prompt'
-  Regex: '(?i:(?:prompt|query)(?:=([\w-]+))? (.*))'
-MessageMatchers:
-- Command: 'prompt'
-  Regex: '(.*)'
+AppendChannels:
+- mock
