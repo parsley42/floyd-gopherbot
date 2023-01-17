@@ -140,7 +140,7 @@ class AIPrompt
     else
       response = @client.completions(parameters: {
         model: @model,
-        prompt: input,
+        prompt: prompt,
         temperature: @temperature,
         max_tokens: @max_tokens,
         n: @responses,
