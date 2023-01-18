@@ -217,7 +217,10 @@ class AIPrompt
     token_memory = @bot.CheckoutDatum(TokenMemory, false)
     if token_memory.exists
       token = token_memory.datum[@bot.user]
-      @bot.Log(:info, "Using personal token for #{@bot.user}") if token
+      if token
+        @bot.Log(:info, "Using personal token for #{@bot.user}")
+        @org = nil
+      end
     end
     unless token
       token = ENV['OPENAI_KEY']
