@@ -217,7 +217,7 @@ class AIPrompt
       token = ENV['OPENAI_KEY']
       @bot.Log(:info, "Using global token for #{@bot.user}") if token
     end
-    @bot.Log(:error, "No OpenAI token found for request from user #{@bot.user}")
+    @bot.Log(:error, "No OpenAI token found for request from user #{@bot.user}") unless token
     return token
   end
 
