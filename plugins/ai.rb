@@ -294,8 +294,7 @@ when "ambient", "prompt", "ai", "resume"
     bot.SayThread("(please wait while I contact the AI)")
   end
   aibot, reply = ai.query(prompt)
-  resume = (command == "resume")
-  if (init_conversation and direct) or not ambient 
+  if remember_conversation and (direct or not ambient)
     continuations = bot.GetTaskConfig()["Continuations"]
     ending = " ('quit' to finish)"
     while true
