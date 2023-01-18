@@ -125,6 +125,7 @@ class AIPrompt
       }
     end
 
+    @org = ENV["OPENAI_ORGANIZATION_ID"]
     token = get_token()
     unless token and token.length > 0
       @valid = false
@@ -133,9 +134,8 @@ class AIPrompt
     end
     Ruby::OpenAI.configure do |config|
       config.access_token = token
-      org = ENV['OPENAI_ORGANIZATION_ID']
-      if org
-        config.organization_id = org
+      if @org
+        config.organization_id = @org
       end
     end
     @client = OpenAI::Client.new
@@ -161,6 +161,12 @@ class AIPrompt
         presence_penalty: @presence_penalty,
         # num_beams: @num_beams,
       })
+      if response["error"]
+        message = response["error"]["message"]
+        bot.SayThread("Sorry, there was an error - '#{message}'")
+        bot.Log(:error, "connecting to openai: #{message}")
+        exit(0)
+      end
       aitext = response["choices"][0]["text"].lstrip
     end
     if input.length > 0
@@ -215,7 +221,7 @@ class AIPrompt
     end
     unless token
       token = ENV['OPENAI_KEY']
-      @bot.Log(:info, "Using global token for #{@bot.user}") if token
+      @bot.Log(:info, "Using global token for #{@bot.user} (org: #{@org})") if token
     end
     @bot.Log(:error, "No OpenAI token found for request from user #{@bot.user}") unless token
     return token
