@@ -1,0 +1,15 @@
+Channels:
+- ai
+AllowDirect: false
+Help:
+- Keywords: [ "ai", "prompt", "query", "token" ]
+  Helptext:
+  - "<query> - Start or continue a threaded conversation with OpenAI (all messages)"
+CommandMatchers:
+- Command: 'token'
+  Regex: '(?i:(?:link|add|set)[ -]token)'
+- Command: 'rmtoken'
+  Regex: '(?i:(?:rm|remove|unlink|delete|unset)[ -]token)'
+MessageMatchers:
+- Command: 'ambient'
+  Regex: '(.*)'

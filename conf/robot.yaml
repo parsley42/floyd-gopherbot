@@ -82,9 +82,13 @@ ExternalPlugins:
   "ai":
     Path: plugins/ai.rb
     Description: A trivial plugin wrapping the OpenAI completions API
-    Parameters:
-    - Name: OPENAI_KEY
-      Value: sk-{{ decrypt "hSD5nNQuEWccJWo0S81IoKH6PRBbi70TLUkcf4aH/ivsvbnzAAlo4F+2xL6LZ5pm0iTTh3AbTVGf2G+z8UomklXlrryWSeGwB/D49w==" }}
+    ParameterSets:
+    - "openai"
+  "ambientai":
+    Path: plugins/ai.rb
+    Description: A trivial plugin wrapping the OpenAI completions API
+    ParameterSets:
+    - "openai"
   "util":
     Description: A convenience plugin for various tasks
     Path: plugins/util.sh
@@ -139,7 +143,11 @@ NameSpaces:
       Value: "robot_rsa"
     - Name: BOT_SSH_PHRASE
       Value: {{ decrypt "kB8L7FJuQi4ovUKX09CITRr1ij2NCSg+vBUyC1+ER4DVRHg3Z2+S28qjzCdk9OOR7Al6IA/PnoI=" }}
-
+ParameterSets:
+  "openai":
+    Parameters:
+    - Name: OPENAI_KEY
+      Value: sk-{{ decrypt "hSD5nNQuEWccJWo0S81IoKH6PRBbi70TLUkcf4aH/ivsvbnzAAlo4F+2xL6LZ5pm0iTTh3AbTVGf2G+z8UomklXlrryWSeGwB/D49w==" }}
 # If a job doesn't specify otherwise, this is the channel where it runs
 DefaultJobChannel: floyd-jobs
 

@@ -10,13 +10,12 @@ defaultConfig = <<'DEFCONFIG'
 ---
 AllowDirect: true
 Help:
-- Keywords: [ "ai", "prompt", "query", "token" ]
+- Keywords: [ "ai", "prompt", "query" ]
   Helptext:
   - "(bot), prompt <query> - Start a new threaded conversation with OpenAI"
   - "(bot), ai <query> - Send a single query to OpenAI, generating a reply in the channel"
   - "(bot), add-token - Add your personal OpenAI token (robot will prompt you in a DM)"
   - "(bot), remove-token - Remove your personal OpenAI token"
-  - "<query> - Send a query to the OpenAI LLM (all messages)"
 CommandMatchers:
 - Command: 'prompt'
   Regex: '(?i:(prompt|ai|query)(?:=([\w-]+))? (.*))'
