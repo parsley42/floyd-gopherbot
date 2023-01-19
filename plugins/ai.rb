@@ -18,7 +18,7 @@ Help:
   - "(bot), remove-token - Remove your personal OpenAI token"
 CommandMatchers:
 - Command: 'prompt'
-  Regex: '(?i:(prompt|ai|query)(?:=([\w-]+))? (.*))'
+  Regex: '(?i:(p)(?:rompt)?(?:=([\w-]+))?[: ]\s*(.*))'
 - Command: 'resume'
   Regex: '(?i:(?:(?:resume|continue)[ -]conversation) (.*))'
 - Command: 'token'
@@ -142,14 +142,11 @@ class AIPrompt
   end
 
   def query(input)
-    prompt, tokens, truncated = build_prompt(input)
-    @bot.Log(:info, "Using prompt with #{tokens} tokens; truncated: #{truncated}")
-    if @bot.channel == "mock" and @bot.protocol == "terminal"
-      puts("DEBUG full prompt:\n#{prompt}")
-    end
-    if @bot.channel == "mock"
-      aitext = "Profile #{@profile} and query: #{input} in channel: #{@bot.channel}"
-    else
+    while true
+      prompt = build_prompt(input)
+      if @bot.channel == "mock" and @bot.protocol == "terminal"
+        puts("DEBUG full prompt:\n#{prompt}")
+      end
       response = @client.completions(parameters: {
         model: @model,
         prompt: prompt,
@@ -161,14 +158,26 @@ class AIPrompt
         presence_penalty: @presence_penalty,
         # num_beams: @num_beams,
       })
+      if @bot.protocol == "terminal"
+        pp("Response:", response)
+      end
       if response["error"]
         message = response["error"]["message"]
-        bot.SayThread("Sorry, there was an error - '#{message}'")
-        bot.Log(:error, "connecting to openai: #{message}")
+        if message.match?(/tokens/i)
+          @exchanges.shift
+          @bot.Log(:warn, "token error, dropping an exchange and re-trying")
+          next
+        end
+        @bot.SayThread("Sorry, there was an error - '#{message}'")
+        @bot.Log(:error, "connecting to openai: #{message}")
         exit(0)
       end
       aitext = response["choices"][0]["text"].lstrip
+      usage = response["usage"]
+      @bot.Log(:debug, "usage: prompt #{usage["prompt_tokens"]}, completion #{usage["completion_tokens"]}, total #{usage["total_tokens"]}")
+      break
     end
+    aitext.strip!
     if input.length > 0
       @exchanges << {
         "human" => input,
@@ -178,25 +187,19 @@ class AIPrompt
     if @remember_conversation
       @bot.Remember(@memory, encode(@exchanges))
     end
-    aitext.strip!
     return @bot, aitext
   end
 
   def build_prompt(input)
-    initial = exchange_string(@initial)
-    prompt = String.new
+    prompt = exchange_string(@initial)
     final = nil
     if input.length > 0
       final = "Human: #{input}\nAI:"
     end
-    exchanges = []
-    @exchanges.reverse_each do |exchange|
+    @exchanges.each do |exchange|
       exchange_string = exchange_string(exchange)
-      exchanges.unshift(exchange)
-      prompt = exchange_string + prompt
+      prompt += exchange_string
     end
-    @exchanges = exchanges
-    prompt = initial + prompt
     if final
       prompt += final
     end
