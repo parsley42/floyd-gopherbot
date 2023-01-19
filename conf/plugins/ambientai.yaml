@@ -7,6 +7,6 @@ Help:
   - "<query> - Start or continue a threaded conversation with OpenAI (all messages in channel)"
 MessageMatchers:
 - Command: 'ambient'
-  Regex: '(.*)'
+  Regex: '([\s\S]*)'
 Config:
   AmbientChannel: "ai"

@@ -21,11 +21,11 @@ Help:
   - "(bot), remove-token - remove your personal OpenAI token"
 CommandMatchers:
 - Command: 'prompt'
-  Regex: '(?i:p(?:rompt)?(?:=([\w-]+))?[: ]\s*(.*))'
+  Regex: '(?i:p(?:rompt)?(?:=([\w-]+))?[: ]\s*([\s\S]*))'
 - Command: 'ai'
-  Regex: '(?i:ai(?:=([\w-]+))?[: ]\s*(.*))'
+  Regex: '(?i:ai(?:=([\w-]+))?[: ]\s*([\s\S]*))'
 - Command: 'continue'
-  Regex: '(?i:c(?:ontinue)?[: ]\s*(.*))'
+  Regex: '(?i:c(?:ontinue)?[: ]\s*([\s\S]*))'
 - Command: 'token'
   Regex: '(?i:(?:link|add|set)[ -]token)'
 - Command: 'rmtoken'
