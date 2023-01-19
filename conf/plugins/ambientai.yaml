@@ -2,14 +2,11 @@ Channels:
 - ai
 AllowDirect: false
 Help:
-- Keywords: [ "ai", "prompt", "query", "token" ]
+- Keywords: [ "ai", "prompt", "query" ]
   Helptext:
-  - "<query> - Start or continue a threaded conversation with OpenAI (all messages)"
-CommandMatchers:
-- Command: 'token'
-  Regex: '(?i:(?:link|add|set)[ -]token)'
-- Command: 'rmtoken'
-  Regex: '(?i:(?:rm|remove|unlink|delete|unset)[ -]token)'
+  - "<query> - Start or continue a threaded conversation with OpenAI (all messages in channel)"
 MessageMatchers:
 - Command: 'ambient'
   Regex: '(.*)'
+Config:
+  AmbientChannel: "ai"
