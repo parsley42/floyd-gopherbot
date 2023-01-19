@@ -330,7 +330,7 @@ when "ambient", "prompt", "ai", "continue"
   aibot.Say(reply)
   ambient_channel = cfg["AmbientChannel"]
   ambient = ambient_channel && ambient_channel == bot.channel
-  if remember_conversation and (direct or not ambient)
+  if remember_conversation and (direct or not ambient) and (command != "continue")
     botalias = bot.GetBotAttribute("alias").attr
     follow_up_command = direct ? "c:" : botalias + "c"
     aibot.Say("(use '#{follow_up_command} <follow-up text>' to continue the conversation)")
