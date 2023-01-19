@@ -186,22 +186,13 @@ class AIPrompt
     initial = exchange_string(@initial)
     prompt = String.new
     final = nil
-    truncated = false
-    current_length = count_tokens(initial)
     if input.length > 0
       final = "Human: #{input}\nAI:"
-      current_length += count_tokens(final)
     end
     exchanges = []
     @exchanges.reverse_each do |exchange|
       exchange_string = exchange_string(exchange)
-      size = count_tokens(exchange_string)
-      if current_length + size > @max_input
-        truncated = true
-        break
-      end
       exchanges.unshift(exchange)
-      current_length += size
       prompt = exchange_string + prompt
     end
     @exchanges = exchanges
@@ -209,7 +200,7 @@ class AIPrompt
     if final
       prompt += final
     end
-    return prompt, current_length, truncated
+    return prompt
   end
 
   def get_token
