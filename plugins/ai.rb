@@ -177,9 +177,9 @@ class AIPrompt
         presence_penalty: @presence_penalty,
         # num_beams: @num_beams,
       })
-      if @bot.protocol == "terminal"
-        pp("Response:", response)
-      end
+      # if @bot.protocol == "terminal"
+      #   pp("Response:", response)
+      # end
       if response["error"]
         message = response["error"]["message"]
         if message.match?(/tokens/i)

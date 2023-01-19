@@ -6,6 +6,7 @@ ProtocolConfig:
   EOF: ";quit"
   Abort: ";abort"
   HearSelf: true
+  GenerateNewlines: true
   BotName: 'floyd'
   StartChannel: floyd-jobs
   StartUser: parse
