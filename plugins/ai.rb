@@ -1,5 +1,13 @@
 #!/usr/bin/ruby
 
+## TODO:
+## - Add user parameter, hash of robot name and slack user ID;
+##   see: https://beta.openai.com/docs/guides/safety-best-practices/end-user-ids
+## - Add retry/repeat/regenerate to send the previous prompt again;
+##   note that this will need to pop the last exchange off of exhanges
+##   and re-send the human part
+## - Augment debugging to include the preamble plus a truncated version of exchanges
+
 # load the Gopherbot ruby library and instantiate the bot
 require 'gopherbot_v1'
 bot = Robot.new()
@@ -19,9 +27,12 @@ Help:
   - "(bot), ai <query> - send a single query to OpenAI, generating a reply in the channel"
   - "(bot), add-token - add your personal OpenAI token (robot will prompt you in a DM)"
   - "(bot), remove-token - remove your personal OpenAI token"
+  - "(bot), debug-ai - add debugging output during interactions"
 CommandMatchers:
 - Command: 'prompt'
   Regex: '(?i:p(?:rompt)?(?:=([\w-]+))?[: ]\s*([\s\S]*))'
+- Command: 'debug'
+  Regex: '(?i:debug[ -]ai)'
 - Command: 'ai'
   Regex: '(?i:ai(?:=([\w-]+))?[: ]\s*([\s\S]*))'
 - Command: 'continue'
@@ -78,11 +89,28 @@ require 'json'
 require 'base64'
 
 class AIPrompt
-  attr_reader :valid, :error
+  attr_reader :valid, :error, :cfg
 
   TokenMemory = "usertokens"
   ShortTermMemoryPrefix = "ai-conversation"
-  DefaultProfile = "davinci-std"
+  ShortTermMemoryDebugPrefix = "ai-debug"
+  DefaultProfile = "default"
+  ## Used when plugin configuration doesn't include a given profile
+  FallbackSettings = {
+    "params" => {
+      "model" => "text-davinci-003",
+      "temperature" => 0.91,
+      "max_tokens" => 1001,
+      "n" => 1,
+      "top_p" => 1,
+      "frequency_penalty" => 0.3,
+      "presence_penalty" => 0.4,
+      "stop" => ["Human:", "AI:"]
+    },
+    "ai_string" => "AI:",
+    "user_string" => "Human:",
+    "preamble" => "Human: Who are you?\nAI: I am an AI created by OpenAI. How can I help you?"
+  }
 
   def initialize(bot, profile,
       init_conversation:,
@@ -103,6 +131,8 @@ class AIPrompt
     @valid = true
     @remember_conversation = remember_conversation
     @init_conversation = init_conversation
+    debug_memory = @bot.Recall(ShortTermMemoryDebugPrefix + ":" + bot.thread_id)
+    @debug = (debug_memory.length > 0)
 
     if (bot.threaded_message or @direct) and @remember_conversation and not @init_conversation
       encoded_state = bot.Recall(@memory)
@@ -118,30 +148,12 @@ class AIPrompt
         end
       end
     end
+    @cfg = bot.GetTaskConfig()
 
-    case @profile
-    when "davinci-std"
-      @model = "text-davinci-003"
-      @temperature = 0.84      # creativity
-      @max_tokens = 2212
-      @max_input = 3997 - @max_tokens
-      @responses = 1           # n
-      @word_probability = 0.7  # top_p
-      @frequency_penalty = 0.2
-      @presence_penalty = 0.4
-      @user_string = "Human:"
-      @ai_string = "AI:"
-      @max_tokens = 1001
-      @max_input = 3997 - @max_tokens
-      @stop = [ @user_string, @ai_string]
-      @num_beams = 7           # unused?
-      @initial = {
-        "human" => "Who are you?",
-        "ai" => "I am an AI created by OpenAI. How can I help you?"
-      }
-    else
-      @valid = false
-      @error = "unknown profile '#{@profile}'"
+    @settings = @cfg[@profile]
+    unless @settings
+      @settings = FallbackSettings
+      @bot.Log(:warn, "no settings found for profile #{@profile}, using fallback settings")
     end
 
     @org = ENV["OPENAI_ORGANIZATION_ID"]
@@ -166,20 +178,16 @@ class AIPrompt
       if @bot.channel == "mock" and @bot.protocol == "terminal"
         puts("DEBUG full prompt:\n#{prompt}")
       end
-      response = @client.completions(parameters: {
-        model: @model,
-        prompt: prompt,
-        temperature: @temperature,
-        max_tokens: @max_tokens,
-        n: @responses,
-        top_p: @word_probability,
-        frequency_penalty: @frequency_penalty,
-        presence_penalty: @presence_penalty,
-        # num_beams: @num_beams,
-      })
-      # if @bot.protocol == "terminal"
-      #   pp("Response:", response)
-      # end
+      parameters = @settings["params"]
+      if @debug
+        @bot.Say("Query parameters: #{parameters.to_json}", :fixed)
+        @bot.Say("Prompt: #{prompt}", :fixed)
+      end
+      parameters["prompt"] = prompt
+      response = @client.completions(parameters: parameters)
+      if @debug
+        @bot.Say("Response: #{response.to_json}", :fixed)
+      end
       if response["error"]
         message = response["error"]["message"]
         if message.match?(/tokens/i)
@@ -210,7 +218,7 @@ class AIPrompt
   end
 
   def build_prompt(input)
-    prompt = exchange_string(@initial)
+    prompt = @settings["preamble"] + "\n"
     final = nil
     if input.length > 0
       final = "Human: #{input}\nAI:"
@@ -263,13 +271,8 @@ class AIPrompt
     JSON.parse(json)
   end
 
-  def count_tokens(str)
-    count = str.scan(/\w+|[^\s\w]+/s).length
-    count += str.count("\n")
-  end
-
   def exchange_string(exchange)
-    return "#{@user_string} #{exchange["human"]}\n#{@ai_string} #{exchange["ai"]}\n"
+    return "#{@settings["user_string"]} #{exchange["human"]}\n#{@settings["ai_string"]} #{exchange["ai"]}\n"
   end
 end
 
@@ -316,7 +319,7 @@ when "ambient", "prompt", "ai", "continue"
     bot.SayThread(ai.error)
     exit(0)
   end
-  cfg = bot.GetTaskConfig()
+  cfg = ai.cfg
   if init_conversation
     hold_messages = cfg["WaitMessages"]
     hold_message = bot.RandomString(hold_messages)
@@ -335,6 +338,13 @@ when "ambient", "prompt", "ai", "continue"
     follow_up_command = direct ? "c:" : botalias + "c"
     aibot.Say("(use '#{follow_up_command} <follow-up text>' to continue the conversation)")
   end
+when "debug"
+  unless bot.threaded_message
+    bot.SayThread("You can only initialize debugging in a conversation thread")
+    exit(0)
+  end
+  bot.Remember(AIPrompt::ShortTermMemoryDebugPrefix + ":" + bot.thread_id, "true")
+  bot.SayThread("(ok, debugging output is enabled for this conversation)")
 when "token"
   rep = bot.PromptUserForReply("SimpleString", "OpenAI token?")
   unless rep.ret == Robot::Ok

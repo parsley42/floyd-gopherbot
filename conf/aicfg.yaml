@@ -1,0 +1,19 @@
+## aicfg.yaml - configurable OpenAI completion profiles
+
+## Indented 2 because it's included in the Config: section
+  Profiles:
+    "default":
+      "params"
+        "model": "text-davinci-003"
+        "temperature": 0.91
+        "max_tokens": 1001
+        "n": 1
+        "top_p": 1
+        "frequency_penalty": 0.3
+        "presence_penalty": 0.4
+        "stop": ["Human:", "AI:"]
+      "ai_string": "AI:"
+      "user_string": "Human:"
+      "preamble": |
+        Human: Who are you?
+        AI: I am an AI created by OpenAI. How can I help you?
