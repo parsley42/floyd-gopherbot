@@ -6,7 +6,11 @@ ProtocolConfig:
   BotToken: xoxb-{{ decrypt "Y13OyHeixFRTbXaazv4yBQ4n1PL6XIQ1Rwl03H2XFMQifegrbSt269cTmlYD173lIM7kFrgx/DpZ5zOT/TjWrfo8/kZZJpj+8tbK3+Oi" }}
   #SlackToken: xoxb-37291947428-{{ decrypt "sHHcBr5tLKAWPH51O9UK3nExGIq37JqqIMB0oZiI9+yKgD3d6zstmI3Y5PURc3Yvj7WBug==" }}
   MaxMessageSplit: 2
+  HearSelf: true
 UserRoster:
+  - UserName: floyd
+    UserID: U04KT6PV4UQ
+    BotUser: true
   # Clu is the dev bot on my laptop
   - UserName: clu
     UserID: UDV39JHT6
