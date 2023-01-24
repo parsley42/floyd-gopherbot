@@ -87,6 +87,7 @@ end
 require "ruby/openai"
 require 'json'
 require 'base64'
+require 'digest/sha1'
 
 class AIPrompt
   attr_reader :valid, :error, :cfg
@@ -179,6 +180,7 @@ class AIPrompt
         puts("DEBUG full prompt:\n#{prompt}")
       end
       parameters = @settings["params"]
+      parameters["user"] = Digest::SHA1.hexdigest(ENV["GOPHER_USER_ID"])
       if @debug
         @bot.Say("Query parameters: #{parameters.to_json}", :fixed)
         @bot.Say("Prompt: #{prompt}", :fixed)
