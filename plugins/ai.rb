@@ -30,13 +30,13 @@ Help:
   - "(bot), debug-ai - add debugging output during interactions"
 CommandMatchers:
 - Command: 'prompt'
-  Regex: '(?i:p(?:rompt)?(?:=([\w-]+))?[: ]\s*([\s\S]*))'
+  Regex: '(?i:p(?:rompt)?(?:=([\w-]+)?(?:/(debug))?)?[: ]\s*(.*))'
 - Command: 'debug'
   Regex: '(?i:debug[ -]ai)'
 - Command: 'ai'
-  Regex: '(?i:ai(?:=([\w-]+))?[: ]\s*([\s\S]*))'
+  Regex: '(?i:ai(?:=([\w-]+)?(?:/(debug))?)?[: ]\s*(.*))'
 - Command: 'continue'
-  Regex: '(?i:c(?:ontinue)?[: ]\s*([\s\S]*))'
+  Regex: '(?i:c(?:ontinue)?[: ]\s*(.*))'
 - Command: 'token'
   Regex: '(?i:(?:link|add|set)[ -]token)'
 - Command: 'rmtoken'
@@ -116,7 +116,8 @@ class AIPrompt
       init_conversation:,
       remember_conversation:,
       force_thread:,
-      direct:
+      direct:,
+      debug:
     )
     # We don't default the var because it could be just set to a zero-length string ("")
     unless profile and profile.length > 0
@@ -132,7 +133,7 @@ class AIPrompt
     @remember_conversation = remember_conversation
     @init_conversation = init_conversation
     debug_memory = @bot.Recall(ShortTermMemoryDebugPrefix + ":" + bot.thread_id)
-    @debug = (debug_memory.length > 0)
+    @debug = (debug_memory.length > 0 or debug)
 
     if (bot.threaded_message or @direct) and @remember_conversation and not @init_conversation
       encoded_state = bot.Recall(@memory)
@@ -149,8 +150,7 @@ class AIPrompt
       end
     end
     @cfg = bot.GetTaskConfig()
-
-    @settings = @cfg[@profile]
+    @settings = @cfg["Profiles"][@profile]
     unless @settings
       @settings = FallbackSettings
       @bot.Log(:warn, "no settings found for profile #{@profile}, using fallback settings")
@@ -283,8 +283,15 @@ when "ambient", "prompt", "ai", "continue"
   init_conversation = false
   remember_conversation = true
   force_thread = false
+  debug = false
   if direct and command == "ai"
     command = "prompt"
+  end
+  if command == "ambient" or command == "continue"
+    profile = ""
+    prompt = ARGV.shift
+  else
+    profile, debug, prompt = ARGV.shift(3)
   end
   case command
   when "ambient"
@@ -293,9 +300,16 @@ when "ambient", "prompt", "ai", "continue"
   when "ai"
     init_conversation = true
     remember_conversation = false
+    if debug and debug.length > 0
+      debug = true
+    end
   when "prompt"
     init_conversation = true
     force_thread = true unless direct
+    if debug and debug.length > 0
+      bot.RememberThread(AIPrompt::ShortTermMemoryDebugPrefix + ":" + bot.thread_id, "true")
+      debug = true
+    end
   when "continue"
     unless direct or bot.threaded_message
       bot.SayThread("Sorry, you can't continue AI conversations in a channel")
@@ -303,17 +317,12 @@ when "ambient", "prompt", "ai", "continue"
     end
     init_conversation = false
   end
-  if command == "ambient" or command == "continue"
-    profile = ""
-    prompt = ARGV.shift
-  else
-    profile, prompt = ARGV.shift(2)
-  end
   ai = AIPrompt.new(bot, profile,
     init_conversation: init_conversation,
     remember_conversation: remember_conversation,
     force_thread: force_thread,
-    direct: direct
+    direct: direct,
+    debug: debug
   )
   unless ai.valid
     bot.SayThread(ai.error)

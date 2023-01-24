@@ -10,3 +10,4 @@ MessageMatchers:
   Regex: '(^[^!;\-%~*+^\$?[\]{}][\s\S]*)'
 Config:
   AmbientChannel: "ai"
+{{ .Include "../aicfg.yaml" }}
