@@ -30,7 +30,7 @@ CommandMatchers:
 - Command: 'prompt'
   Regex: '(?i:p(?:rompt)?(?:=([\w-]+)?(?:/(debug))?)?[: ]\s*(.*))'
 - Command: 'debug'
-  Regex: '(?i:debug[ -]ai)'
+  Regex: '(?i:d(ebug[ -]ai)?)'
 - Command: 'regenerate'
   Regex: '(?i:r(egenerate|etry|epeat)?)'
 - Command: 'ai'
