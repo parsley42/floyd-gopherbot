@@ -313,7 +313,6 @@ class AIPrompt
 end
 
 direct = (bot.channel == "")
-
 case command
 when "ambient", "prompt", "ai", "continue", "regenerate"
   init_conversation = false
@@ -327,7 +326,7 @@ when "ambient", "prompt", "ai", "continue", "regenerate"
     profile = ""
     prompt = ARGV.shift
   else
-    profile, debug, prompt = ARGV.shift(3)
+    profile, debug_flag, prompt = ARGV.shift(3)
   end
   regenerate = false
   if command == "regenerate"
@@ -342,7 +341,7 @@ when "ambient", "prompt", "ai", "continue", "regenerate"
   when "ai"
     init_conversation = true
     remember_conversation = false
-    if debug and debug.length > 0
+    if debug_flag and debug_flag.length > 0
       debug = true
     end
   when "prompt"
