@@ -1,13 +1,5 @@
 #!/usr/bin/ruby
 
-## TODO:
-## - Add user parameter, hash of robot name and slack user ID;
-##   see: https://beta.openai.com/docs/guides/safety-best-practices/end-user-ids
-## - Add retry/repeat/regenerate to send the previous prompt again;
-##   note that this will need to pop the last exchange off of exhanges
-##   and re-send the human part
-## - Augment debugging to include the preamble plus a truncated version of exchanges
-
 # load the Gopherbot ruby library and instantiate the bot
 require 'gopherbot_v1'
 bot = Robot.new()
@@ -16,12 +8,18 @@ command = ARGV.shift()
 
 defaultConfig = <<'DEFCONFIG'
 ---
+## n.b. All of this can be overridden with custom config in
+## conf/plugins/<pluginname>.yaml. Hashes are merged with custom
+## config taking precedence. Arrays can be overwritten, or appended
+## by defining e.g. AppendWaitMessages: [ ... ]
+## ... and remember, yamllint is your friend.
 AllowDirect: true
 Help:
 - Keywords: [ "ai", "prompt", "query" ]
   Helptext:
   - "(bot), prompt <query> - start a new threaded conversation with OpenAI"
   - "(bot), p: <query> - shorthand for prompt"
+  - "(bot), r(egenerate) - re-send the previous prompt"
   - "(bot), continue <follow up> - continue the conversation with the AI (threads only)"
   - "(bot), c: <follow up> - shorthand for continue the conversation with the AI (threads only)"
   - "(bot), ai <query> - send a single query to OpenAI, generating a reply in the channel"
@@ -33,6 +31,8 @@ CommandMatchers:
   Regex: '(?i:p(?:rompt)?(?:=([\w-]+)?(?:/(debug))?)?[: ]\s*(.*))'
 - Command: 'debug'
   Regex: '(?i:debug[ -]ai)'
+- Command: 'regenerate'
+  Regex: '(?i:r(egenerate|etry|epeat)?)'
 - Command: 'ai'
   Regex: '(?i:ai(?:=([\w-]+)?(?:/(debug))?)?[: ]\s*(.*))'
 - Command: 'continue'
@@ -58,6 +58,22 @@ Config:
   - "just a sec while I reach out to the high-tech guru"
   - "hold on a bit while I contact the technological titan"
   - "be right back while I get an answer from the techno telepath"
+  Profiles:
+    "default":
+      "params":
+        "model": "text-davinci-003"
+        "temperature": 0.91
+        "max_tokens": 1001
+        "n": 1
+        "top_p": 1
+        "frequency_penalty": 0.4
+        "presence_penalty": 0.5
+        "stop": ["Human:", "AI:"]
+      "ai_string": "AI:"
+      "user_string": "Human:"
+      "preamble": |
+        Human: Who are you?
+        AI: I am an AI created by OpenAI. How can I help you?
 ## This should only be enabled in alternate configurations for the plugin,
 ## where `AllowDirect` is set to 'false' and only a single application
 ## channel is specified.
@@ -96,22 +112,7 @@ class AIPrompt
   ShortTermMemoryPrefix = "ai-conversation"
   ShortTermMemoryDebugPrefix = "ai-debug"
   DefaultProfile = "default"
-  ## Used when plugin configuration doesn't include a given profile
-  FallbackSettings = {
-    "params" => {
-      "model" => "text-davinci-003",
-      "temperature" => 0.91,
-      "max_tokens" => 1001,
-      "n" => 1,
-      "top_p" => 1,
-      "frequency_penalty" => 0.3,
-      "presence_penalty" => 0.4,
-      "stop" => ["Human:", "AI:"]
-    },
-    "ai_string" => "AI:",
-    "user_string" => "Human:",
-    "preamble" => "Human: Who are you?\nAI: I am an AI created by OpenAI. How can I help you?"
-  }
+  PartialLineLength = 42
 
   def initialize(bot, profile,
       init_conversation:,
@@ -153,8 +154,9 @@ class AIPrompt
     @cfg = bot.GetTaskConfig()
     @settings = @cfg["Profiles"][@profile]
     unless @settings
-      @settings = FallbackSettings
-      @bot.Log(:warn, "no settings found for profile #{@profile}, using fallback settings")
+      @profile = "default"
+      @settings = @cfg["Profiles"][@profile]
+      @bot.Log(:warn, "no settings found for profile #{@profile}, falling back to 'default'")
     end
 
     @org = ENV["OPENAI_ORGANIZATION_ID"]
@@ -173,9 +175,18 @@ class AIPrompt
     @client = OpenAI::Client.new
   end
 
-  def query(input)
+  def query(input, regenerate = false)
+    if regenerate
+      unless @exchanges.length > 0
+        @bot.Say("Eh... I can't recall a previous query")
+        exit(0)
+      end
+      @bot.Say("(ok, I'll re-send the previous prompt)")
+      last_exchange = @exchanges.pop
+      input = last_exchange["human"]
+    end
     while true
-      prompt = build_prompt(input)
+      prompt, partial = build_prompt(input)
       if @bot.channel == "mock" and @bot.protocol == "terminal"
         puts("DEBUG full prompt:\n#{prompt}")
       end
@@ -183,13 +194,10 @@ class AIPrompt
       parameters["user"] = Digest::SHA1.hexdigest(ENV["GOPHER_USER_ID"])
       if @debug
         @bot.Say("Query parameters: #{parameters.to_json}", :fixed)
-        @bot.Say("Prompt: #{prompt}", :fixed)
+        @bot.Say("Prompt (lines truncated):\n#{partial}", :fixed)
       end
       parameters["prompt"] = prompt
       response = @client.completions(parameters: parameters)
-      if @debug
-        @bot.Say("Response: #{response.to_json}", :fixed)
-      end
       if response["error"]
         message = response["error"]["message"]
         if message.match?(/tokens/i)
@@ -201,11 +209,21 @@ class AIPrompt
         @bot.Log(:error, "connecting to openai: #{message}")
         exit(0)
       end
-      aitext = response["choices"][0]["text"].lstrip
-      usage = response["usage"]
-      @bot.Log(:debug, "usage: prompt #{usage["prompt_tokens"]}, completion #{usage["completion_tokens"]}, total #{usage["total_tokens"]}")
       break
     end
+    aitext = response["choices"][0]["text"].lstrip
+    if @debug
+      ## This monkey business is because .to_json was including
+      ## items removed with .delete(...). ?!?
+      rdata = {}
+      response.each_key do |key|
+        next if key == "choices"
+        rdata[key] = response[key]
+      end
+      @bot.Say("Response data: #{rdata.to_json}", :fixed)
+    end
+    usage = response["usage"]
+    @bot.Log(:debug, "usage: prompt #{usage["prompt_tokens"]}, completion #{usage["completion_tokens"]}, total #{usage["total_tokens"]}")
     aitext.strip!
     if input.length > 0
       @exchanges << {
@@ -220,19 +238,22 @@ class AIPrompt
   end
 
   def build_prompt(input)
-    prompt = @settings["preamble"] + "\n"
+    prompt = @settings["preamble"]
+    partial = @settings["preamble"]
     final = nil
     if input.length > 0
       final = "Human: #{input}\nAI:"
     end
     @exchanges.each do |exchange|
-      exchange_string = exchange_string(exchange)
+      exchange_string, partial_exchange = exchange_string(exchange)
       prompt += exchange_string
+      partial += partial_exchange
     end
     if final
       prompt += final
+      partial += final
     end
-    return prompt
+    return prompt, partial
   end
 
   def get_token
@@ -273,15 +294,28 @@ class AIPrompt
     JSON.parse(json)
   end
 
+  ## Courtesy of OpenAI / Astro Boy
+  def truncate_line(str)
+    truncated_str = str.split("\n").first
+    if truncated_str.length > PartialLineLength
+      truncated_str = truncated_str[0..PartialLineLength-1] + " ..."
+    end
+    return truncated_str
+  end
+
   def exchange_string(exchange)
-    return "#{@settings["user_string"]} #{exchange["human"]}\n#{@settings["ai_string"]} #{exchange["ai"]}\n"
+    human_line = "#{@settings["user_string"]} #{exchange["human"]}"
+    ai_line = "#{@settings["ai_string"]} #{exchange["ai"]}"
+    full = "#{human_line}\n#{ai_line}\n"
+    partial = "#{truncate_line(human_line)}\n#{truncate_line(ai_line)}\n"
+    return full, partial
   end
 end
 
 direct = (bot.channel == "")
 
 case command
-when "ambient", "prompt", "ai", "continue"
+when "ambient", "prompt", "ai", "continue", "regenerate"
   init_conversation = false
   remember_conversation = true
   force_thread = false
@@ -294,6 +328,12 @@ when "ambient", "prompt", "ai", "continue"
     prompt = ARGV.shift
   else
     profile, debug, prompt = ARGV.shift(3)
+  end
+  regenerate = false
+  if command == "regenerate"
+    regenerate = true
+    prompt = ""
+    command = "continue"
   end
   case command
   when "ambient"
@@ -314,7 +354,8 @@ when "ambient", "prompt", "ai", "continue"
     end
   when "continue"
     unless direct or bot.threaded_message
-      bot.SayThread("Sorry, you can't continue AI conversations in a channel")
+      action = regenerate ? "regenerate" : "continue"
+      bot.SayThread("Sorry, you can't #{action} AI conversations in a channel")
       exit(0)
     end
     init_conversation = false
@@ -340,7 +381,7 @@ when "ambient", "prompt", "ai", "continue"
       bot.SayThread("(#{hold_message})")
     end
   end
-  aibot, reply = ai.query(prompt)
+  aibot, reply = ai.query(prompt, regenerate)
   aibot.Say(reply)
   ambient_channel = cfg["AmbientChannel"]
   ambient = ambient_channel && ambient_channel == bot.channel
