@@ -347,7 +347,7 @@ when "ambient", "prompt", "ai", "continue", "regenerate"
   when "prompt"
     init_conversation = true
     force_thread = true unless direct
-    if debug and debug.length > 0
+    if debug_flag and debug_flag.length > 0
       bot.RememberThread(AIPrompt::ShortTermMemoryDebugPrefix + ":" + bot.thread_id, "true")
       debug = true
     end
@@ -387,10 +387,11 @@ when "ambient", "prompt", "ai", "continue", "regenerate"
   if remember_conversation and (direct or not ambient) and (command != "continue")
     botalias = bot.GetBotAttribute("alias").attr
     follow_up_command = direct ? "c:" : botalias + "c"
-    aibot.Say("(use '#{follow_up_command} <follow-up text>' to continue the conversation)")
+    regenerate_command = direct ? "r" : botalias + "r"
+    aibot.Say("(use '#{follow_up_command} <follow-up text>' to continue the conversation, or '#{regenerate_command}' to re-send the last prompt)")
   end
 when "debug"
-  unless bot.threaded_message
+  unless bot.threaded_message or direct
     bot.SayThread("You can only initialize debugging in a conversation thread")
     exit(0)
   end
