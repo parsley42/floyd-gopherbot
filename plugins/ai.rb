@@ -314,15 +314,18 @@ end
 
 direct = (bot.channel == "")
 case command
-when "ambient", "prompt", "ai", "continue", "regenerate"
+when "ambient", "prompt", "ai", "continue", "regenerate", "catchall"
   init_conversation = false
   remember_conversation = true
   force_thread = false
   debug = false
+  catchall = false
+  debug_flag = nil
+  botalias = bot.GetBotAttribute("alias").attr
   if direct and command == "ai"
     command = "prompt"
   end
-  if command == "ambient" or command == "continue"
+  if command == "ambient" or command == "continue" or command == "catchall"
     profile = ""
     prompt = ARGV.shift
   else
@@ -333,6 +336,23 @@ when "ambient", "prompt", "ai", "continue", "regenerate"
     regenerate = true
     prompt = ""
     command = "continue"
+  end
+  if command == "catchall"
+    if prompt.start_with?(botalias)
+      bot.Say("No command matched; try '#{botalias}help', or '#{botalias}help ai'")
+    end
+    catchall = true
+    if direct
+      short_term_memory = bot.Recall(AIPrompt::ShortTermMemoryPrefix)
+      if short_term_memory.length > 0
+        bot.Remember(AIPrompt::ShortTermMemoryPrefix, short_term_memory)
+        command = "continue"
+      else
+        command = "prompt"
+      end
+    else
+      command = "ambient"
+    end
   end
   case command
   when "ambient"
@@ -385,10 +405,14 @@ when "ambient", "prompt", "ai", "continue", "regenerate"
   ambient_channel = cfg["AmbientChannel"]
   ambient = ambient_channel && ambient_channel == bot.channel
   if remember_conversation and (direct or not ambient) and (command != "continue")
-    botalias = bot.GetBotAttribute("alias").attr
     follow_up_command = direct ? "c:" : botalias + "c"
     regenerate_command = direct ? "r" : botalias + "r"
-    aibot.Say("(use '#{follow_up_command} <follow-up text>' to continue the conversation, or '#{regenerate_command}' to re-send the last prompt)")
+    prompt_command = direct ? "p" : botalias + "p"
+    if catchall
+      aibot.Say("(use '#{prompt_command} <query>' to start a new conversation, or '#{regenerate_command}' to re-send the last prompt)")
+    else
+      aibot.Say("(use '#{follow_up_command} <follow-up text>' to continue the conversation, or '#{regenerate_command}' to re-send the last prompt)")
+    end
   end
 when "debug"
   unless bot.threaded_message or direct

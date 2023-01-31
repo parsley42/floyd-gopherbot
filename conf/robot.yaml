@@ -89,6 +89,11 @@ ExternalPlugins:
     Description: A trivial plugin wrapping the OpenAI completions API
     ParameterSets:
     - "openai"
+  "directai":
+    Path: plugins/ai.rb
+    Description: A trivial plugin wrapping the OpenAI completions API
+    ParameterSets:
+    - "openai"
   "util":
     Description: A convenience plugin for various tasks
     Path: plugins/util.sh
