@@ -1,0 +1,10 @@
+DirectOnly: true
+Help:
+- Keywords: [ "ai", "prompt", "query" ]
+  Helptext:
+  - "<query> - Start or continue a threaded conversation with OpenAI (all messages that don't match commands)"
+CommandMatchers: []
+MessageMatchers: []
+CatchAll: true
+Config:
+{{ .Include "../aicfg.yaml" }}
