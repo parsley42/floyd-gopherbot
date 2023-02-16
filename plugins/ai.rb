@@ -100,7 +100,7 @@ when "configure"
   exit(0)
 end
 
-require "ruby/openai"
+require "openai"
 require 'json'
 require 'base64'
 require 'digest/sha1'
@@ -166,7 +166,7 @@ class AIPrompt
       botalias = @bot.GetBotAttribute("alias")
       @error = "Sorry, you need to add your token first - try '#{botalias}help'"
     end
-    Ruby::OpenAI.configure do |config|
+    OpenAI.configure do |config|
       config.access_token = token
       if @org
         config.organization_id = @org
