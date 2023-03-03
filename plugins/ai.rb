@@ -61,7 +61,7 @@ Config:
   Profiles:
     "default":
       "params":
-        "model": "text-davinci-003"
+        "model": "gpt-3.5-turbo"
         "temperature": 0.91
         "max_tokens": 1001
         "n": 1
