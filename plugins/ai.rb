@@ -28,7 +28,7 @@ Help:
   - "(bot), debug-ai - add debugging output during interactions"
 CommandMatchers:
 - Command: 'prompt'
-  Regex: '(?i:p(?:rompt)?(?:=([\w-]+)?(?:/(debug))?)?[: ]\s*(.*))'
+  Regex: '(?i:p(?:rompt)?(?:=([\w-]+))?(?:/(debug)?)?[: ]\s*(.*))'
 - Command: 'debug'
   Regex: '(?i:d(ebug[ -]ai)?)'
 - Command: 'regenerate'
@@ -62,18 +62,10 @@ Config:
     "default":
       "params":
         "model": "gpt-3.5-turbo"
-        "temperature": 0.91
-        "max_tokens": 1001
-        "n": 1
-        "top_p": 1
-        "frequency_penalty": 0.4
-        "presence_penalty": 0.5
-        "stop": ["Human:", "AI:"]
-      "ai_string": "AI:"
-      "user_string": "Human:"
-      "preamble": |
-        Human: Who are you?
-        AI: I am an AI created by OpenAI. How can I help you?
+        "temperature": 0.77
+      "system": |
+        You are ChatGPT, a large language model trained by OpenAI. Answer as correctly as possible.
+      "max_context": 3072
 ## This should only be enabled in alternate configurations for the plugin,
 ## where `AllowDirect` is set to 'false' and only a single application
 ## channel is specified.
@@ -158,6 +150,8 @@ class AIPrompt
       @settings = @cfg["Profiles"][@profile]
       @bot.Log(:warn, "no settings found for profile #{@profile}, falling back to 'default'")
     end
+    @system = @settings["system"]
+    @max_context = @settings["max_context"]
 
     @org = ENV["OPENAI_ORGANIZATION_ID"]
     token = get_token()
@@ -181,23 +175,23 @@ class AIPrompt
         @bot.Say("Eh... I can't recall a previous query")
         exit(0)
       end
-      @bot.Say("(ok, I'll re-send the previous prompt)")
+      @bot.Say("(ok, I'll re-send the previous chat content)")
       last_exchange = @exchanges.pop
       input = last_exchange["human"]
     end
     while true
-      prompt, partial = build_prompt(input)
+      messages, partial = build_messages(input)
       if @bot.channel == "mock" and @bot.protocol == "terminal"
-        puts("DEBUG full prompt:\n#{prompt}")
+        puts("DEBUG full chat:\n#{messages}")
       end
       parameters = @settings["params"]
       parameters["user"] = Digest::SHA1.hexdigest(ENV["GOPHER_USER_ID"])
       if @debug
         @bot.Say("Query parameters: #{parameters.to_json}", :fixed)
-        @bot.Say("Prompt (lines truncated):\n#{partial}", :fixed)
+        @bot.Say("Chat (lines truncated):\n#{partial}", :fixed)
       end
-      parameters["prompt"] = prompt
-      response = @client.completions(parameters: parameters)
+      parameters[:messages] = messages
+      response = @client.chat(parameters: parameters)
       if response["error"]
         message = response["error"]["message"]
         if message.match?(/tokens/i)
@@ -211,7 +205,7 @@ class AIPrompt
       end
       break
     end
-    aitext = response["choices"][0]["text"].lstrip
+    aitext = response["choices"][0]["message"]["content"].lstrip
     if @debug
       ## This monkey business is because .to_json was including
       ## items removed with .delete(...). ?!?
@@ -225,35 +219,46 @@ class AIPrompt
     usage = response["usage"]
     @bot.Log(:debug, "usage: prompt #{usage["prompt_tokens"]}, completion #{usage["completion_tokens"]}, total #{usage["total_tokens"]}")
     aitext.strip!
-    if input.length > 0
-      @exchanges << {
-        "human" => input,
-        "ai" => aitext
-      }
-    end
     if @remember_conversation
+      if input.length > 0
+        @exchanges << {
+          "human" => input,
+          "ai" => aitext
+        }
+      end
+      current_total = usage["total_tokens"]
+      if current_total > @max_context
+        @bot.Log(:warn, "conversation length (#{current_total}) exceeded max_context (#{@max_context}), dropping an exchange")
+        @exchanges.shift
+      end
       @bot.Remember(@memory, encode_state)
     end
     return @bot, aitext
   end
 
-  def build_prompt(input)
-    prompt = @settings["preamble"]
-    partial = @settings["preamble"]
+  def build_messages(input)
+    messages = [
+      {
+        role: "system", content: @system
+      }
+    ]
+    partial = String.new
     final = nil
     if input.length > 0
-      final = "Human: #{input}\nAI:"
+      final = {
+        role: "user", content: input
+      }
     end
     @exchanges.each do |exchange|
-      exchange_string, partial_exchange = exchange_string(exchange)
-      prompt += exchange_string
-      partial += partial_exchange
+      contents, partial_string = exchange_data(exchange)
+      messages += contents
+      partial += partial_string
     end
     if final
-      prompt += final
-      partial += final
+      messages.append(final)
+      partial += "user: #{input}"
     end
-    return prompt, partial
+    return messages, partial
   end
 
   def get_token
@@ -303,12 +308,19 @@ class AIPrompt
     return truncated_str
   end
 
-  def exchange_string(exchange)
-    human_line = "#{@settings["user_string"]} #{exchange["human"]}"
-    ai_line = "#{@settings["ai_string"]} #{exchange["ai"]}"
-    full = "#{human_line}\n#{ai_line}\n"
+  def exchange_data(exchange)
+    contents = [
+      {
+        role: "user", content: exchange["human"]
+      },
+      {
+        role: "assistant", content: exchange["ai"]
+      }
+    ]
+    human_line = "user: #{exchange["human"]}"
+    ai_line = "assistant: #{exchange["ai"]}"
     partial = "#{truncate_line(human_line)}\n#{truncate_line(ai_line)}\n"
-    return full, partial
+    return contents, partial
   end
 end
 

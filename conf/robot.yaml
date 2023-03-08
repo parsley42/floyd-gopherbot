@@ -152,7 +152,7 @@ ParameterSets:
   "openai":
     Parameters:
     - Name: OPENAI_KEY
-      Value: sk-{{ decrypt "hSD5nNQuEWccJWo0S81IoKH6PRBbi70TLUkcf4aH/ivsvbnzAAlo4F+2xL6LZ5pm0iTTh3AbTVGf2G+z8UomklXlrryWSeGwB/D49w==" }}
+      Value: sk-{{ decrypt "DmGoLUPF1jye+UxO+kHaO2yrO8gzwROWiHJSApcrZw0o35lDkiQFUO4qYrjFQhUoJCADJCAQz0yP6WP93WpZY8BjibkTYty+7nh9/A==" }}
 # If a job doesn't specify otherwise, this is the channel where it runs
 DefaultJobChannel: floyd-jobs
 
