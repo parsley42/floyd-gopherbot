@@ -190,7 +190,7 @@ class OpenAI_API
   end
 
   def draw(prompt)
-    response = @client.images.generate(parameters: { prompt: prompt })
+    response = @client.images.generate(parameters: { prompt: prompt, size: "512x512" })
     return response.dig("data", 0, "url")
   end
 
