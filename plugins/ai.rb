@@ -15,6 +15,9 @@ defaultConfig = <<'DEFCONFIG'
 ## ... and remember, yamllint is your friend.
 AllowDirect: true
 Help:
+- Keywords: [ "draw", "image", "paint" ]
+  Helptext:
+  - "(bot), draw <description> - generate an image with OpenAI Dall-E"
 - Keywords: [ "ai", "prompt", "query" ]
   Helptext:
   - "(bot), prompt <query> - start a new threaded conversation with OpenAI"
@@ -35,6 +38,8 @@ CommandMatchers:
   Regex: '(?i:r(egenerate|etry|epeat)?)'
 - Command: 'ai'
   Regex: '(?i:ai(?:=([\w-]+)?(?:/(debug))?)?[: ]\s*(.*))'
+- Command: 'image'
+  Regex: '(?i:(?:draw|paint|image)\s*(.*))'
 - Command: 'continue'
   Regex: '(?i:c(?:ontinue)?[: ]\s*(.*))'
 - Command: 'token'
@@ -58,6 +63,21 @@ Config:
   - "just a sec while I reach out to the high-tech guru"
   - "hold on a bit while I contact the technological titan"
   - "be right back while I get an answer from the techno telepath"
+  DrawMessages:
+  - "give us a sec - our AI is brushing up on its drawing skills..."
+  - "hang tight - the AI is taking a moment to gather inspiration from its favorite memes"
+  - "chill for a moment - our AI is meditating on the perfect color scheme for your image"
+  - "please hold while the AI practices its signature for your image"
+  - "sit tight while our AI sharpens its pencils... metaphorically, of course"
+  - "hang on - the AI is taking a quick break to refuel on coffee and creativity"
+  - "one sec - our AI is warming up its digital paintbrush for your image"
+  - "please wait while the AI daydreams about your picture-perfect image"
+  - "hang on, our AI is putting on its creative thinking cap for your image"
+  - "please wait - the AI is doing a quick sketch of your image in its mind before getting started"
+  - "please hold while the AI takes a moment to visualize your masterpiece"
+  - "relax for a moment - our AI is doing some calisthenics to get pumped up for your image"
+  - "please join the AI in taking a deep breath - it's getting ready to bring your vision to life!"
+  - "please wait while the AI puts on some classical music to get in the zone"
   Profiles:
     "default":
       "params":
@@ -97,7 +117,7 @@ require 'json'
 require 'base64'
 require 'digest/sha1'
 
-class AIPrompt
+class OpenAI_API
   attr_reader :valid, :error, :cfg
 
   TokenMemory = "usertokens"
@@ -167,6 +187,11 @@ class AIPrompt
       end
     end
     @client = OpenAI::Client.new
+  end
+
+  def draw(prompt)
+    response = @client.images.generate(parameters: { prompt: prompt })
+    return response.dig("data", 0, "url")
   end
 
   def query(input, regenerate = false)
@@ -355,9 +380,9 @@ when "ambient", "prompt", "ai", "continue", "regenerate", "catchall"
     end
     catchall = true
     if direct
-      short_term_memory = bot.Recall(AIPrompt::ShortTermMemoryPrefix)
+      short_term_memory = bot.Recall(OpenAI_API::ShortTermMemoryPrefix)
       if short_term_memory.length > 0
-        bot.Remember(AIPrompt::ShortTermMemoryPrefix, short_term_memory)
+        bot.Remember(OpenAI_API::ShortTermMemoryPrefix, short_term_memory)
         command = "continue"
       else
         command = "prompt"
@@ -380,7 +405,7 @@ when "ambient", "prompt", "ai", "continue", "regenerate", "catchall"
     init_conversation = true
     force_thread = true unless direct
     if debug_flag and debug_flag.length > 0
-      bot.RememberThread(AIPrompt::ShortTermMemoryDebugPrefix + ":" + bot.thread_id, "true")
+      bot.RememberThread(OpenAI_API::ShortTermMemoryDebugPrefix + ":" + bot.thread_id, "true")
       debug = true
     end
   when "continue"
@@ -391,7 +416,7 @@ when "ambient", "prompt", "ai", "continue", "regenerate", "catchall"
     end
     init_conversation = false
   end
-  ai = AIPrompt.new(bot, profile,
+  ai = OpenAI_API.new(bot, profile,
     init_conversation: init_conversation,
     remember_conversation: remember_conversation,
     force_thread: force_thread,
@@ -426,12 +451,30 @@ when "ambient", "prompt", "ai", "continue", "regenerate", "catchall"
       aibot.Say("(use '#{follow_up_command} <follow-up text>' to continue the conversation, or '#{regenerate_command}' to re-send the last prompt)")
     end
   end
+when "image"
+  ai = OpenAI_API.new(bot, profile,
+    init_conversation: init_conversation,
+    remember_conversation: remember_conversation,
+    force_thread: force_thread,
+    direct: direct,
+    debug: debug
+  )
+  unless ai.valid
+    bot.SayThread(ai.error)
+    exit(0)
+  end
+  cfg = ai.cfg
+  hold_messages = cfg["DrawMessages"]
+  hold_message = bot.RandomString(hold_messages)
+  bot.Say("(#{hold_message})")
+  url = ai.draw(ARGV.shift)
+  bot.Say(url)
 when "debug"
   unless bot.threaded_message or direct
     bot.SayThread("You can only initialize debugging in a conversation thread")
     exit(0)
   end
-  bot.Remember(AIPrompt::ShortTermMemoryDebugPrefix + ":" + bot.thread_id, "true")
+  bot.Remember(OpenAI_API::ShortTermMemoryDebugPrefix + ":" + bot.thread_id, "true")
   bot.SayThread("(ok, debugging output is enabled for this conversation)")
 when "token"
   rep = bot.PromptUserForReply("SimpleString", "OpenAI token?")
@@ -440,7 +483,7 @@ when "token"
     exit
   end
   token = rep.to_s
-  token_memory = bot.CheckoutDatum(AIPrompt::TokenMemory, true)
+  token_memory = bot.CheckoutDatum(OpenAI_API::TokenMemory, true)
   if not token_memory.exists
       token_memory.datum = {}
   end
@@ -449,7 +492,7 @@ when "token"
   bot.UpdateDatum(token_memory)
   bot.SayThread("Ok, I stored your personal OpenAI token")
 when "rmtoken"
-  token_memory = bot.CheckoutDatum(AIPrompt::TokenMemory, true)
+  token_memory = bot.CheckoutDatum(OpenAI_API::TokenMemory, true)
   if not token_memory.exists
       bot.SayThread("I don't see any tokens linked")
       bot.CheckinDatum(token_memory)
