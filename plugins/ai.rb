@@ -105,7 +105,6 @@ DEFCONFIG
 
 case command
 when "init"
-  system("gem install --user-install --no-document ruby-openai")
   exit(0)
 when "configure"
   puts(defaultConfig)
