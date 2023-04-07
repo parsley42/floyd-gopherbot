@@ -17,7 +17,7 @@ resource "aws_ssm_parameter" "deploy-key" {
 }
 
 resource "aws_ssm_parameter" "wg-key" {
-  name        = "${local.bot-prefix}/wireguard/wg_key"
+  name        = "${local.bot-prefix}/wg_key"
   description = "The robot's private wireguard key"
   type        = "SecureString"
   value       = var.wg-key
