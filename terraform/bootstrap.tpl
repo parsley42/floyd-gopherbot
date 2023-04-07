@@ -6,13 +6,6 @@ echo "Running $0 ..."
 yum -y upgrade
 yum -y install jq git ruby python3-pip
 
-export AWS_REGION=$(curl -s http://169.254.169.254/latest/meta-data/placement/region)
-echo "Detected region: $AWS_REGION"
-export INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
-echo "Detected instance-id: $INSTANCE_ID"
-
-aws --profile default configure set region $AWS_REGION
-
 echo "Getting secrets from SSM"
 GOPHER_ENCRYPTION_KEY=$(aws ssm get-parameter --name "/robots/${bot_name}/encryption_key" --with-decryption --output text --query Parameter.Value)
 GOPHER_DEPLOY_KEY=$(aws ssm get-parameter --name "/robots/${bot_name}/deploy_key" --with-decryption --output text --query Parameter.Value)
