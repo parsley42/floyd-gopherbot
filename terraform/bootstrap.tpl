@@ -12,11 +12,12 @@ echo "Detected instance-id: $INSTANCE_ID"
 
 aws --profile default configure set region $AWS_REGION
 
-# Get secrets from SSM
-GOPHER_ENCRYPTION_KEY=$(aws ssm get-parameter --name "/robots/${bot_name}/encryption-key" --with-decryption --output text --query Parameter.Value)
-GOPHER_DEPLOY_KEY=$(aws ssm get-parameter --name "/robots/${bot_name}/deploy-key" --with-decryption --output text --query Parameter.Value)
-WG_PRIVATE=$(aws ssm get-parameter --name "/robots/${bot_name}/wg-key" --with-decryption --output text --query Parameter.Value)
+echo "Getting secrets from SSM"
+GOPHER_ENCRYPTION_KEY=$(aws ssm get-parameter --name "/robots/${bot_name}/encryption_key" --with-decryption --output text --query Parameter.Value)
+GOPHER_DEPLOY_KEY=$(aws ssm get-parameter --name "/robots/${bot_name}/deploy_key" --with-decryption --output text --query Parameter.Value)
+WG_PRIVATE=$(aws ssm get-parameter --name "/robots/${bot_name}/wg_key" --with-decryption --output text --query Parameter.Value)
 
+echo "Installing WireGuard Tools"
 # Install WireGuard tools from Rocky Linux; kernel module already present
 ROCKY_LINUX_PREFIX="https://download.rockylinux.org/pub/rocky/9/devel/x86_64/os/Packages/w"
 WG_RPM_VERSION=$(curl -s $ROCKY_LINUX_PREFIX/ | grep -oP '(?<=href="wireguard-tools).*(?=">)')
@@ -24,6 +25,7 @@ rpm --import https://dl.rockylinux.org/pub/rocky/RPM-GPG-KEY-Rocky-9
 rpm -i $ROCKY_LINUX_PREFIX/wireguard-tools$WG_RPM_VERSION
 systemctl enable wg-quick@wg0.service
 
+echo "Configuring WireGuard"
 cat > /etc/wireguard/wg0.conf << EOF
 [Interface]
 Address = ${vpn_cidr}
