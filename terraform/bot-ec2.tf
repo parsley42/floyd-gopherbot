@@ -16,7 +16,7 @@ resource "aws_launch_template" "bot-template" {
   update_default_version               = true
   user_data = templatefile("${path.module}/bootstrap.tpl", {
     bot_name   = var.robot-name
-    vpn_ip     = var.vpn-ip
+    vpn_cidr     = var.vpn-cidr
     wg_private = var.wg-key
     bot_repo   = var.repository
     protocol   = var.protocol

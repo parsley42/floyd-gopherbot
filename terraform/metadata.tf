@@ -1,7 +1,4 @@
-# Account-specific terraform configuration
 provider "aws" {
-  # Sandbox in us-east-1
-  region  = "us-east-1"
   default_tags {
     tags = {
       Provisioner = "Terraform"

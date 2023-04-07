@@ -42,6 +42,12 @@ variable "vpc-name" {
   default     = ""
 }
 
+variable "vpn-cidr" {
+  type        = string
+  description = "The name of the vpc where the instance should launch"
+  default     = ""
+}
+
 variable "tags" {
   default     = {}
   description = "Instance tags"

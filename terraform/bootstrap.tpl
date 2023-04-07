@@ -21,7 +21,7 @@ systemctl enable wg-quick@wg0.service
 WG_PRIVATE=$(/usr/local/bin/aws ssm get-parameters --name /robots/${bot_name}/wireguard/wg_key --with-decryption | jq -r .Parameters[0].Value)
 cat > /etc/wireguard/wg0.conf << EOF
 [Interface]
-Address = ${vpn_ip}
+Address = ${vpn_cidr}
 PrivateKey = ${wg_private}
 ListenPort = 51820
 PostUp = /etc/wireguard/start-nat.sh
@@ -32,7 +32,7 @@ cat > /etc/wireguard/start-nat.sh << 'EOF'
 #!/bin/bash
 echo 1 > /proc/sys/net/ipv4/ip_forward
 ETHERNET_INT=$(ip -brief link show | awk '$1 ~ /^e/ {print $1; exit}')
-/sbin/iptables -t nat -I POSTROUTING 1 -s ${vpn_ip} -o $ETHERNET_INT -j MASQUERADE
+/sbin/iptables -t nat -I POSTROUTING 1 -s ${vpn_cidr} -o $ETHERNET_INT -j MASQUERADE
 /sbin/iptables -I INPUT 1 -i wg0 -j ACCEPT
 /sbin/iptables -I FORWARD 1 -i $ETHERNET_INT -o wg0 -j ACCEPT
 /sbin/iptables -I FORWARD 1 -i wg0 -o $ETHERNET_INT -j ACCEPT
@@ -43,7 +43,7 @@ cat > /etc/wireguard/stop-nat.sh << 'EOF'
 #!/bin/bash
 echo 0 > /proc/sys/net/ipv4/ip_forward
 ETHERNET_INT=$(ip -brief link show | awk '$1 ~ /^e/ {print $1; exit}')
-/sbin/iptables -t nat -D POSTROUTING -s ${vpn_ip} -o $ETHERNET_INT -j MASQUERADE
+/sbin/iptables -t nat -D POSTROUTING -s ${vpn_cidr} -o $ETHERNET_INT -j MASQUERADE
 /sbin/iptables -D INPUT -i wg0 -j ACCEPT
 /sbin/iptables -D FORWARD -i $ETHERNET_INT -o wg0 -j ACCEPT
 /sbin/iptables -D FORWARD -i wg0 -o $ETHERNET_INT -j ACCEPT
