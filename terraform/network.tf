@@ -14,6 +14,10 @@ data "aws_subnets" "bot-subnets" {
     name   = "vpc-id"
     values = [data.aws_vpc.bot-vpc.id]
   }
+    filter {
+    name   = "tag:Name"
+    values = ["Management DMZ Subnet*"]
+  }
 }
 
 resource "aws_security_group" "bot-sg" {

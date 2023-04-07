@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # bootstrap.sh - Turn an Amazon Linux 2023 instance in to a Gopherbot host
+echo "Running $0 ..."
 
 yum -y upgrade
 yum -y install jq git ruby python3-pip
