@@ -1,9 +1,4 @@
-variable "robot-name" {
-  type        = string
-  description = "The robot's name, required for provisioning multiple"
-  default     = "gopherbot"
-}
-
+# These should be definted in <robot-name>.auto.tfvars
 variable "encryption-key" {
   type        = string
   description = "The robot's brain encryption key, should be in <bot-name>.auto.tfvars file"
@@ -17,6 +12,13 @@ variable "deploy-key" {
 variable "wg-key" {
   type        = string
   description = "The robot's private wireguard key"
+}
+
+# The rest are non-sensitive and can go in terraform.tfvars
+variable "robot-name" {
+  type        = string
+  description = "The robot's name, required for provisioning multiple"
+  default     = "gopherbot"
 }
 
 variable "repository" {

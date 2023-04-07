@@ -8,21 +8,27 @@ data "aws_ami" "amazon-linux-2023" {
   }
 }
 
-resource "aws_launch_template" "bot-template" {
-  name                                 = "${var.robot-name}_template"
-  image_id                             = data.aws_ami.amazon-linux-2023.id
-  instance_initiated_shutdown_behavior = "terminate"
-  instance_type                        = var.instance-type
-  update_default_version               = true
-  user_data = templatefile("${path.module}/bootstrap.tpl", {
+locals {
+  # Define the bootstrap script as a local variable
+  bootstrap_script = templatefile("${path.module}/bootstrap.tpl", {
     bot_name   = var.robot-name
-    vpn_cidr     = var.vpn-cidr
+    vpn_cidr   = var.vpn-cidr
     wg_private = var.wg-key
     bot_repo   = var.repository
     protocol   = var.protocol
     bot_key    = var.encryption-key
     deploy_key = var.deploy-key
   })
+}
+
+resource "aws_launch_template" "bot-template" {
+  name                                 = "${var.robot-name}_template"
+  image_id                             = data.aws_ami.amazon-linux-2023.id
+  instance_initiated_shutdown_behavior = "terminate"
+  instance_type                        = var.instance-type
+  update_default_version               = true
+
+  user_data = base64encode(local.bootstrap_script)
 
   iam_instance_profile {
     name = aws_iam_instance_profile.bot_profile.name

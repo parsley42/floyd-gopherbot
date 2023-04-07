@@ -12,17 +12,22 @@ echo "Detected instance-id: $INSTANCE_ID"
 
 aws --profile default configure set region $AWS_REGION
 
+# Get secrets from SSM
+GOPHER_ENCRYPTION_KEY=$(aws ssm get-parameter --name "/robots/${bot_name}/encryption-key" --with-decryption --output text --query Parameter.Value)
+GOPHER_DEPLOY_KEY=$(aws ssm get-parameter --name "/robots/${bot_name}/deploy-key" --with-decryption --output text --query Parameter.Value)
+WG_PRIVATE=$(aws ssm get-parameter --name "/robots/${bot_name}/wg-key" --with-decryption --output text --query Parameter.Value)
+
 # Install WireGuard tools from Rocky Linux; kernel module already present
 ROCKY_LINUX_PREFIX="https://download.rockylinux.org/pub/rocky/9/devel/x86_64/os/Packages/w"
 WG_RPM_VERSION=$(curl -s $ROCKY_LINUX_PREFIX/ | grep -oP '(?<=href="wireguard-tools).*(?=">)')
 rpm --import https://dl.rockylinux.org/pub/rocky/RPM-GPG-KEY-Rocky-9
 rpm -i $ROCKY_LINUX_PREFIX/wireguard-tools$WG_RPM_VERSION
 systemctl enable wg-quick@wg0.service
-WG_PRIVATE=$(/usr/local/bin/aws ssm get-parameters --name /robots/${bot_name}/wireguard/wg_key --with-decryption | jq -r .Parameters[0].Value)
+
 cat > /etc/wireguard/wg0.conf << EOF
 [Interface]
 Address = ${vpn_cidr}
-PrivateKey = ${wg_private}
+PrivateKey = $WG_PRIVATE
 ListenPort = 51820
 PostUp = /etc/wireguard/start-nat.sh
 PostDown = /etc/wireguard/stop-nat.sh
@@ -65,10 +70,10 @@ rm $GBDL
 
 mkdir -p /var/lib/robots
 useradd -d /var/lib/robots/${bot_name} -G wheel -r -m -c "${bot_name} gopherbot" ${bot_name}
-cat > /var/lib/robots/${bot_name}/.env << 'EOF'
+cat > /var/lib/robots/${bot_name}/.env << EOF
 GOPHER_CUSTOM_REPOSITORY=${bot_repo}
-GOPHER_DEPLOY_KEY=${deploy_key}
-GOPHER_ENCRYPTION_KEY=${bot_key}
+GOPHER_DEPLOY_KEY=$GOPHER_DEPLOY_KEY
+GOPHER_ENCRYPTION_KEY=$GOPHER_ENCRYPTION_KEY
 GOPHER_PROTOCOL=${protocol}
 EOF
 chown ${bot_name}:${bot_name} /var/lib/robots/${bot_name}/.env
@@ -100,4 +105,4 @@ EOF
 
 systemctl daemon-reload
 systemctl enable ${bot_name}
-# systemctl start ${bot_name}
+systemctl start ${bot_name}
