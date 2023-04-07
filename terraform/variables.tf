@@ -19,11 +19,6 @@ variable "wg-key" {
   description = "The robot's private wireguard key"
 }
 
-variable "wg-pub" {
-  type        = string
-  description = "The robot's public wireguard key"
-}
-
 variable "repository" {
   type        = string
   description = "The robot's configuration repository"
@@ -41,7 +36,7 @@ variable "instance-type" {
   default     = "t3.micro"
 }
 
-variable "vpc_name" {
+variable "vpc-name" {
   type        = string
   description = "The name of the vpc where the instance should launch"
   default     = ""

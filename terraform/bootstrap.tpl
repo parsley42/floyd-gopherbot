@@ -12,7 +12,7 @@ echo "Detected instance-id: $INSTANCE_ID"
 
 aws --profile default configure set region $AWS_REGION
 
-# Install WireGuard tools
+# Install WireGuard tools from Rocky Linux; kernel module already present
 ROCKY_LINUX_PREFIX="https://download.rockylinux.org/pub/rocky/9/devel/x86_64/os/Packages/w"
 WG_RPM_VERSION=$(curl -s $ROCKY_LINUX_PREFIX/ | grep -oP '(?<=href="wireguard-tools).*(?=">)')
 rpm --import https://dl.rockylinux.org/pub/rocky/RPM-GPG-KEY-Rocky-9
@@ -100,4 +100,4 @@ EOF
 
 systemctl daemon-reload
 systemctl enable ${bot_name}
-systemctl start ${bot_name}
+# systemctl start ${bot_name}

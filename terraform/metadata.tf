@@ -2,23 +2,17 @@
 provider "aws" {
   # Sandbox in us-east-1
   region  = "us-east-1"
-  profile = "terraform-sandbox"
   default_tags {
     tags = {
       Provisioner = "Terraform"
-      Repository = "gopherbot-ram"
+      Repository = "floyd-gopherbot"
     }
   }
 }
 
-# Local definition; each piece of infrastructure has it's own
-# s3 key.
 terraform {
-  backend "s3" {
-    bucket  = "welld-sandbox-terraform-state"
-    key     = "gopherbot-ram/state"
-    region  = "us-east-1"
-    profile = "terraform-sandbox"
+  backend "local" {
+    path = "floyd.tfstate"
   }
 
   required_providers {
