@@ -4,7 +4,7 @@
 echo "Running $0 ..."
 
 yum -y upgrade
-yum -y install jq git ruby python3-pip
+yum -y install jq git ruby python3-pip iptables
 
 echo "Getting secrets from SSM"
 GOPHER_ENCRYPTION_KEY=$(aws ssm get-parameter --name "/robots/${bot_name}/encryption_key" --with-decryption --output text --query Parameter.Value)
@@ -98,6 +98,8 @@ TimeoutStopSec=600
 [Install]
 WantedBy=default.target
 EOF
+
+echo "${bot_name} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 
 systemctl daemon-reload
 systemctl enable ${bot_name}
