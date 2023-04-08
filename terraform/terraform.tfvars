@@ -3,6 +3,6 @@
 robot-name = "floyd"
 repository = "git@github.com:parsley42/floyd-gopherbot.git"
 protocol = "slack"
-instance-type = "t3a.nano"
+instance-type = "t3a.micro"
 vpc-name = "Management VPC"
 vpn-cidr = "10.77.0.1/24"
