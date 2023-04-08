@@ -65,7 +65,7 @@ tar xzf $GBDL
 rm $GBDL
 
 mkdir -p /var/lib/robots
-useradd -d /var/lib/robots/${bot_name} -G wheel -r -m -c "${bot_name} gopherbot" ${bot_name}
+useradd -d /var/lib/robots/${bot_name} -r -m -c "${bot_name} gopherbot" ${bot_name}
 cat > /var/lib/robots/${bot_name}/.env << EOF
 GOPHER_CUSTOM_REPOSITORY=${bot_repo}
 GOPHER_DEPLOY_KEY=$GOPHER_DEPLOY_KEY
@@ -99,7 +99,10 @@ TimeoutStopSec=600
 WantedBy=default.target
 EOF
 
-echo "${bot_name} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+cat > /etc/sudoers.d/${bot_name}-user << EOF
+# User rules for robot
+${bot_name} ALL=(ALL) NOPASSWD:ALL
+EOF
 
 systemctl daemon-reload
 systemctl enable ${bot_name}
