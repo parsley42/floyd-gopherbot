@@ -3,6 +3,10 @@
 # bootstrap.sh - Turn an Amazon Linux 2023 instance in to a Gopherbot host
 echo "Running $0 ..."
 
+# Uses precious RAM, not useful
+systemctl stop sssd
+systemctl disable sssd
+
 yum -y upgrade
 yum -y install jq git ruby python3-pip iptables
 

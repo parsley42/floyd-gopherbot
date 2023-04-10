@@ -1,0 +1,53 @@
+#!/bin/bash -e
+
+# aws-sso-session
+# Sets up aws configuration from temporary credentials provided by SSO.
+
+usage(){
+  cat >&2 <<EOF
+Usage:
+# These values should be pasted in from AWS SSO web app.
+$ AWS_ACCESS_KEY_ID=<redacted>
+$ AWS_SECRET_ACCESS_KEY=<redacted>
+$ AWS_SESSION_TOKEN=<redacted>
+$ eval \`aws-sso-session [-r <region>] [-p <profile>]\`
+EOF
+  exit 1
+}
+
+PROFILE="default"
+
+while getopts ":ir:p:" OPT; do
+    case $OPT in
+    r )
+        SET_REGION=$OPTARG
+        ;;
+    p )
+        PROFILE=$OPTARG
+        ;;
+    \? | h)
+        [ "$OPT" != "h" ] && echo "Invalid option: $OPTARG" >&2
+        usage
+        exit 1
+        ;;
+    esac
+done
+shift $((OPTIND -1))
+
+if [ ! "$AWS_ACCESS_KEY_ID" ]
+then
+    echo "ERROR: You need to manually set AWS_* vars for import" >&2
+    usage
+fi
+echo "Updating $PROFILE AWS credentials..." >&2
+aws --profile $PROFILE configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+aws --profile $PROFILE configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+aws --profile $PROFILE configure set aws_session_token $AWS_SESSION_TOKEN
+if [ "$SET_REGION" ]
+then
+  aws --profile $PROFILE configure set region $SET_REGION
+fi
+
+echo unset AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN
+
+echo "AWS session credentials updated." >&2
