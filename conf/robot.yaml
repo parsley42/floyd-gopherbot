@@ -160,8 +160,8 @@ TimeZone: "America/New_York"
 ScheduledJobs:
 - Name: "pause-notifies"
   Schedule: "0 0 8 * * *"
-- Name: install-libs
-  Schedule: "@init"
+# - Name: install-libs
+#   Schedule: "@init"
 # - Name: hello
 #   Schedule: "@every 5m" # see: https://godoc.org/github.com/robfig/cron
 #   Arguments: # an array of strings; up to the job to parse numbers & bools
