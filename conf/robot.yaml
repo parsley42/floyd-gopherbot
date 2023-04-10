@@ -11,11 +11,23 @@ Protocol: {{ $proto }}
 ## Protocol-specific configuration
 {{ printf "%s.yaml" $proto | .Include }}
 
-# Specify the mechanism for storing the robots memories.
-Brain: dynamo
+# Brain configuration; this can all be replaced with static configuration
+# and encrypted secrets for most robots.
+{{ $brain := env "GOPHER_BRAIN" | default "dynamo" }}
+{{ $statedir := env "GOPHER_STATEDIR" | default "state" }}
+{{ $defbraindir := printf "%s/brain" $statedir }}
+Brain: {{ $brain }}
+#EncryptBrain: true # default
+{{ if eq $brain "file" }}
+BrainConfig:
+  BrainDirectory: {{ env "GOPHER_BRAIN_DIRECTORY" | default $defbraindir }}
+  Encode: true
+{{ else if eq $brain "dynamo" }}
 BrainConfig:
   TableName: floyd-brain
   Region: "us-east-1"
+{{ end }}
+
 EncryptBrain: true
 
 # Defaults for history and workspace directories, relative to the
