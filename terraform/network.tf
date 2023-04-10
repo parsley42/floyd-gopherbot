@@ -1,12 +1,12 @@
 data "aws_vpc" "bot-vpc" {
-   filter {
-     name = "tag-value"
-     values = ["${var.vpc-name}"]
-   }
-   filter {
-     name = "tag-key"
-     values = ["Name"]
-   }
+  filter {
+    name = "tag-value"
+    values = ["${var.vpc-name}"]
+  }
+  filter {
+    name = "tag-key"
+    values = ["Name"]
+  }
 }
 
 data "aws_subnets" "bot-subnets" {

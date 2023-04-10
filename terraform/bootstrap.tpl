@@ -4,8 +4,19 @@
 echo "Running $0 ..."
 
 # Uses precious RAM, not useful
+echo "Disabling sssd (unused) ..."
 systemctl stop sssd
 systemctl disable sssd
+
+echo "Setting up swap file (${swap_file_size}) ..."
+# Create a swap file
+sudo fallocate -l ${swap_file_size} /swapfile
+sudo chmod 600 /swapfile
+sudo mkswap /swapfile
+
+# Enable the swap file across reboots
+echo '/swapfile swap swap defaults 0 0' | sudo tee -a /etc/fstab > /dev/null
+sudo swapon -a
 
 yum -y upgrade
 yum -y install jq git ruby python3-pip iptables
@@ -110,4 +121,6 @@ EOF
 
 systemctl daemon-reload
 systemctl enable ${bot_name}
+
+echo "Starting the robot (${bot_name}) ..."
 systemctl start ${bot_name}

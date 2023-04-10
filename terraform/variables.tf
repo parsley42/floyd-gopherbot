@@ -38,6 +38,12 @@ variable "instance-type" {
   default     = "t3.micro"
 }
 
+variable "swap-file-size" {
+  type        = string
+  description = "Size of swap file to create"
+  default     = "420M"
+}
+
 variable "vpc-name" {
   type        = string
   description = "The name of the vpc where the instance should launch"

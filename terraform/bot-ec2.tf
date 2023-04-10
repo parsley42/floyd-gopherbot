@@ -11,13 +11,14 @@ data "aws_ami" "amazon-linux-2023" {
 locals {
   # Define the bootstrap script as a local variable
   bootstrap_script = templatefile("${path.module}/bootstrap.tpl", {
-    bot_name   = var.robot-name
-    vpn_cidr   = var.vpn-cidr
-    wg_private = var.wg-key
-    bot_repo   = var.repository
-    protocol   = var.protocol
-    bot_key    = var.encryption-key
-    deploy_key = var.deploy-key
+    bot_name       = var.robot-name
+    vpn_cidr       = var.vpn-cidr
+    swap_file_size = var.swap-file-size
+    wg_private     = var.wg-key
+    bot_repo       = var.repository
+    protocol       = var.protocol
+    bot_key        = var.encryption-key
+    deploy_key     = var.deploy-key
   })
 }
 
