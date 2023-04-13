@@ -349,11 +349,6 @@ class OpenAI_API
 end
 
 direct = (bot.channel == "")
-
-if command == "catchall" and not (bot.threaded_message or direct)
-  exit(0)
-fi
-
 case command
 when "ambient", "prompt", "ai", "continue", "regenerate", "catchall"
   init_conversation = false
