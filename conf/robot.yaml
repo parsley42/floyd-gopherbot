@@ -3,7 +3,8 @@
 
 # Port to listen on for http/JSON api calls, for external plugins
 #LocalPort: 8888
-IgnoreUnlistedUsers: true
+## Opening up Floyd to ... all of C'ville Slack
+# IgnoreUnlistedUsers: true
 
 {{ $proto := env "GOPHER_PROTOCOL" | default "slack" }}
 Protocol: {{ $proto }}
