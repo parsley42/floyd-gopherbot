@@ -8,44 +8,6 @@ command = ARGV.shift()
 
 defaultConfig = <<'DEFCONFIG'
 ---
-## n.b. All of this can be overridden with custom config in
-## conf/plugins/<pluginname>.yaml. Hashes are merged with custom
-## config taking precedence. Arrays can be overwritten, or appended
-## by defining e.g. AppendWaitMessages: [ ... ]
-## ... and remember, yamllint is your friend.
-AllowDirect: true
-Help:
-- Keywords: [ "draw", "image", "paint" ]
-  Helptext:
-  - "(bot), draw <description> - generate an image with OpenAI Dall-E"
-- Keywords: [ "ai", "prompt", "query" ]
-  Helptext:
-  - "(bot), prompt <query> - start a new threaded conversation with OpenAI"
-  - "(bot), p: <query> - shorthand for prompt"
-  - "(bot), r(egenerate) - re-send the previous prompt"
-  - "(bot), continue <follow up> - continue the conversation with the AI (threads only)"
-  - "(bot), c: <follow up> - shorthand for continue the conversation with the AI (threads only)"
-  - "(bot), ai <query> - send a single query to OpenAI, generating a reply in the channel"
-  - "(bot), add-token - add your personal OpenAI token (robot will prompt you in a DM)"
-  - "(bot), remove-token - remove your personal OpenAI token"
-  - "(bot), debug-ai - add debugging output during interactions"
-CommandMatchers:
-- Command: 'prompt'
-  Regex: '(?i:p(?:rompt)?(?:=([\w-]+))?(?:/(debug)?)?[: ]\s*(.*))'
-- Command: 'debug'
-  Regex: '(?i:d(ebug[ -]ai)?)'
-- Command: 'regenerate'
-  Regex: '(?i:r(egenerate|etry|epeat)?)'
-- Command: 'ai'
-  Regex: '(?i:ai(?:=([\w-]+)?(?:/(debug))?)?[: ]\s*(.*))'
-- Command: 'image'
-  Regex: '(?i:(?:draw|paint|image)\s*(.*))'
-- Command: 'continue'
-  Regex: '(?i:c(?:ontinue)?[: ]\s*(.*))'
-- Command: 'token'
-  Regex: '(?i:(?:link|add|set)[ -]token)'
-- Command: 'rmtoken'
-  Regex: '(?i:(?:rm|remove|unlink|delete|unset)[ -]token)'
 Config:
 ## Generated with help from an earlier version of the plugin
   WaitMessages:
@@ -350,9 +312,13 @@ end
 
 direct = (bot.channel == "")
 
-if command == "catchall" and not (bot.threaded_message or direct)
-  exit(0)
-fi
+if command == "catchall"
+  if bot.threaded_message or direct
+    command = "prompt"
+  else
+    exit(0)
+  end
+end
 
 case command
 when "ambient", "prompt", "ai", "continue", "regenerate", "catchall"

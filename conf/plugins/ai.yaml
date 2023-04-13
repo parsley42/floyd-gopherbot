@@ -1,2 +1,30 @@
+---
+Channels:
+- ai
+AllChannels: false
+CatchAll: true
+AllowDirect: true
+Help:
+- Keywords: [ "draw", "image", "paint" ]
+  Helptext:
+  - "(bot), draw <description> - generate an image with OpenAI Dall-E"
+- Keywords: [ "ai", "prompt", "query" ]
+  Helptext:
+  - "(bot), <query> - Start or continue a threaded conversation with OpenAI (in the ai channel)"
+  - "(bot), r(egenerate) - re-send the previous prompt"
+  - "(bot), add-token - add your personal OpenAI token (robot will prompt you in a DM)"
+  - "(bot), remove-token - remove your personal OpenAI token"
+  - "(bot), debug-ai - add debugging output during interactions"
+CommandMatchers:
+- Command: 'debug'
+  Regex: '(?i:d(ebug[ -]ai)?)'
+- Command: 'regenerate'
+  Regex: '(?i:r(egenerate|etry|epeat)?)'
+- Command: 'image'
+  Regex: '(?i:(?:draw|paint|image)\s*(.*))'
+- Command: 'token'
+  Regex: '(?i:(?:link|add|set)[ -]token)'
+- Command: 'rmtoken'
+  Regex: '(?i:(?:rm|remove|unlink|delete|unset)[ -]token)'
 Config:
 {{ .Include "../aicfg.yaml" }}

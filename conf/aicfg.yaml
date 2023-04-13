@@ -1,7 +1,4 @@
 ## aicfg.yaml - configurable OpenAI completion profiles
-Channels:
-- ai
-CatchAll: true
 ## Indented 2 because it's included in the Config: section
   Profiles:
     "default":

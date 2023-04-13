@@ -95,11 +95,11 @@ ExternalPlugins:
     Description: A trivial plugin wrapping the OpenAI completions API
     ParameterSets:
     - "openai"
-  "ambientai":
-    Path: plugins/ai.rb
-    Description: A trivial plugin wrapping the OpenAI completions API
-    ParameterSets:
-    - "openai"
+  # "ambientai":
+  #   Path: plugins/ai.rb
+  #   Description: A trivial plugin wrapping the OpenAI completions API
+  #   ParameterSets:
+  #   - "openai"
   "directai":
     Path: plugins/ai.rb
     Description: A trivial plugin wrapping the OpenAI completions API
