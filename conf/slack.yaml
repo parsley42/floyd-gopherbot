@@ -12,7 +12,10 @@ ProtocolConfig:
   HearSelf: true
 UserRoster:
   - UserName: floyd
-    UserID: U04KT6PV4UQ
+    ## LinuxJedi Team
+    # UserID: U04KT6PV4UQ
+    ## C'ville Slack
+    UserID: U0533UX66LT
     BotUser: true
   # Clu is the dev bot on my laptop
   - UserName: parsley
