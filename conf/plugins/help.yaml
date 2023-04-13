@@ -1,0 +1,3 @@
+---
+# If a command doesn't match, the AI plugin will catch it.
+AllowDirect: false
