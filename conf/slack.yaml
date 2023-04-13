@@ -2,9 +2,12 @@
 # a list of user handles / nicks.
 AdminUsers: [ "parsley", "adrienne" ]
 ProtocolConfig:
-  AppToken: xapp-{{ decrypt "sSb5yQGaOs0ekbUzv51xJzyuusyV7Ol3e4+EzpO2lsYBp/XKRe8z5xi5PiWVe7qTWOdLendssmJWv7brTqtXAivMXUGcwg+VFZY5QWY8hJXl58HCaMlpmlUMSqfg/Atoqli6MzTOPk9BjV5hyhNgvH3Wdovj9olN" }}
-  BotToken: xoxb-{{ decrypt "Y13OyHeixFRTbXaazv4yBQ4n1PL6XIQ1Rwl03H2XFMQifegrbSt269cTmlYD173lIM7kFrgx/DpZ5zOT/TjWrfo8/kZZJpj+8tbK3+Oi" }}
-  #SlackToken: xoxb-37291947428-{{ decrypt "sHHcBr5tLKAWPH51O9UK3nExGIq37JqqIMB0oZiI9+yKgD3d6zstmI3Y5PURc3Yvj7WBug==" }}
+  ## LinuxJedi Slack team
+  # AppToken: xapp-{{ decrypt "sSb5yQGaOs0ekbUzv51xJzyuusyV7Ol3e4+EzpO2lsYBp/XKRe8z5xi5PiWVe7qTWOdLendssmJWv7brTqtXAivMXUGcwg+VFZY5QWY8hJXl58HCaMlpmlUMSqfg/Atoqli6MzTOPk9BjV5hyhNgvH3Wdovj9olN" }}
+  # BotToken: xoxb-{{ decrypt "Y13OyHeixFRTbXaazv4yBQ4n1PL6XIQ1Rwl03H2XFMQifegrbSt269cTmlYD173lIM7kFrgx/DpZ5zOT/TjWrfo8/kZZJpj+8tbK3+Oi" }}
+  ## C'ville Slack
+  AppToken: xapp-1-{{ decrypt "Ob+5v1zcT4tSFK85b7RqobNlCvobQXRt8F5MzyN8H+MU9wqUUa/OCkoNbesgttEc5d/5AM+33COWvHBwqvxEs/xLxccUpKtqJH4vzBrji7+h2qW9KPwZIfx0bWQU/Xegvs53LN+3A8lFwwQuf5fAMJX+Nwj42g==" }}
+  SlackToken: xoxb-{{ decrypt "BSBT9yRQQZlQ6H9abQMH8aCi1R8yuOv/P3g/66VaQvzx36KXq0sTj95w4dZq1oN3BOebl0TN6oHR2nbtuoDr350rklVw9PH0/rQKQyPI" }}
   MaxMessageSplit: 2
   HearSelf: true
 UserRoster:
