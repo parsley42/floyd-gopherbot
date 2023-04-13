@@ -1,6 +1,6 @@
 AdminUsers: [ "alice", "parse" ]
 
-DefaultChannels: [ "general", "random", "chat", "botdev", "floyd-jobs" ]
+DefaultChannels: [ "ai", "general", "random", "chat", "botdev", "floyd-jobs" ]
 DefaultJobChannel: "floyd-jobs"
 ProtocolConfig:
   EOF: ";quit"

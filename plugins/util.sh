@@ -31,7 +31,7 @@ EOF
 
 case "$COMMAND" in
   "init")
-    SendChannelMessage "general" "Floyd here now!"
+    SendChannelMessage "ai" "Floyd here now!"
     ;;
   "configure")
     configure

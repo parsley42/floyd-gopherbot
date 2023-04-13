@@ -61,7 +61,7 @@ BotInfo:
 
 # If a plugin doesn't specify otherwise it will be active in these channels;
 # defaults to all channels
-DefaultChannels: [ "general", "random", "chat", "botdev" ]
+DefaultChannels: [ "ai" ]
 
 # One-character alias the bot can be called by. Note: not all single characters
 # are supported. If your robot doesn't respond to e.g. ";ping", try changing

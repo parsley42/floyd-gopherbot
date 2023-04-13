@@ -1,6 +1,6 @@
 # List of users that can issue admin commands like reload, quit. Should be
 # a list of user handles / nicks.
-AdminUsers: [ "parsley", "adrienne" ]
+AdminUsers: [ "parsley", "meekohi" ]
 ProtocolConfig:
   ## LinuxJedi Slack team
   # AppToken: xapp-{{ decrypt "sSb5yQGaOs0ekbUzv51xJzyuusyV7Ol3e4+EzpO2lsYBp/XKRe8z5xi5PiWVe7qTWOdLendssmJWv7brTqtXAivMXUGcwg+VFZY5QWY8hJXl58HCaMlpmlUMSqfg/Atoqli6MzTOPk9BjV5hyhNgvH3Wdovj9olN" }}
@@ -15,12 +15,19 @@ UserRoster:
     UserID: U04KT6PV4UQ
     BotUser: true
   # Clu is the dev bot on my laptop
-  - UserName: clu
-    UserID: UDV39JHT6
-    BotUser: true
   - UserName: parsley
-    UserID: U0JLW8EMS
-  - UserName: adrienne
-    UserID: U0JM3H95G
-  - UserName: jessica
-    UserID: U03NQA242P3
+    UserID: U0ECQ0W76
+  - UserName: meekohi
+    UserID: U0D6TFPPZ
+  - UserName: kyle
+    UserID: U90DA9P45
+  ## LinuxJedi
+  # - UserName: parsley
+  #   UserID: U0JLW8EMS
+  # - UserName: adrienne
+  #   UserID: U0JM3H95G
+  # - UserName: jessica
+  #   UserID: U03NQA242P3
+  # - UserName: clu
+  #   UserID: UDV39JHT6
+  #   BotUser: true
