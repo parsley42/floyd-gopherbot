@@ -45,7 +45,7 @@ class OpenAI_API
       else
         unless init_conversation
           @valid = false
-          @error = "Sorry, I've forgotten what we were talking about"
+          @error = nil
         end
       end
     end

@@ -184,7 +184,9 @@ when "ambient", "prompt", "ai", "continue", "regenerate", "catchall"
     debug: debug
   )
   unless ai.valid
-    bot.SayThread(ai.error)
+    if ai.error
+      bot.SayThread(ai.error)
+    end
     exit(0)
   end
   cfg = ai.cfg
