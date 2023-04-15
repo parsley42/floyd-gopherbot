@@ -99,10 +99,22 @@ when "configure"
   exit(0)
 end
 
-
 direct = (bot.channel == "")
+
 case command
+# All the conversation commands
+# "catchall" for all messages sent to Floyd that didn't match other commands
+# "ambient" for all messages in the ai channel
+# "continue" for an explicit continuation
+# "ai" for one-shot (non-continuing) queries
+# "regenerate" to resend the last query
 when "ambient", "prompt", "ai", "continue", "regenerate", "catchall"
+  bot.Log(:debug, "handling conversation command '#{command}' from #{ENV["GOPHER_USER"]}/#{ENV["GOPHER_USER_ID"]} in channel #{ENV["GOPHER_CHANNEL"]}/t:#{ENV["GOPHER_THREAD_ID"]}")
+  if command == "ambient" and not bot.threaded_message
+    bot.Log(:debug, "ignoring ambient channel message from #{ENV["GOPHER_USER_ID"]}")
+    ## We never match ambiently in the channel; messages must be directed at the robot
+    exit(0)
+  end
   init_conversation = false
   remember_conversation = true
   force_thread = false
@@ -126,9 +138,6 @@ when "ambient", "prompt", "ai", "continue", "regenerate", "catchall"
     command = "continue"
   end
   if command == "catchall"
-    if prompt.start_with?(botalias)
-      bot.Say("No command matched; try '#{botalias}help', or '#{botalias}help ai'")
-    end
     catchall = true
     if direct
       short_term_memory = bot.Recall(OpenAI_API::ShortTermMemoryPrefix)
@@ -185,9 +194,13 @@ when "ambient", "prompt", "ai", "continue", "regenerate", "catchall"
     if command == "ai"
       bot.Say("(#{hold_message})")
     else
-      bot.SayThread("(#{hold_message})")
+      bot.ReplyThread("(#{hold_message})")
     end
+  else
+    bot.Reply("(continuing AI conversation ...)")
   end
+  type = init_conversation ? "starting" : "continuing"
+  bot.Log(:debug, "#{type} AI conversation with #{ENV["GOPHER_USER"]} in #{ENV["GOPHER_CHANNEL"]}/#{ENV["GOPHER_THREAD_ID"]}")
   aibot, reply = ai.query(prompt, regenerate)
   aibot.Say(reply)
   ambient_channel = cfg["AmbientChannel"]
@@ -202,11 +215,13 @@ when "ambient", "prompt", "ai", "continue", "regenerate", "catchall"
       aibot.Say("(use '#{follow_up_command} <follow-up text>' to continue the conversation, or '#{regenerate_command}' to re-send the last prompt)")
     end
   end
+## END OF CONVERSATION HANDLING
+
 when "image"
   ai = OpenAI_API.new(bot, profile,
     init_conversation: init_conversation,
     remember_conversation: remember_conversation,
-    force_thread: force_thread,
+    force_thread: true,
     direct: direct,
     debug: debug
   )

@@ -1,6 +1,9 @@
 # This is the non-sensitive configuration for Bender, the gopherbot used
 # for development.
 
+# For debugging OpenAI, temporary
+LogLevel: debug
+
 # Port to listen on for http/JSON api calls, for external plugins
 #LocalPort: 8888
 ## Opening up Floyd to ... all of C'ville Slack

@@ -1,3 +1,5 @@
+## This configuration is for ambient conversations, and allows the robot to respond
+## in a thread even if not explicitly spoken to, if a conversation exists.
 Channels:
 - ai
 AllowDirect: false
@@ -5,7 +7,7 @@ CatchAll: true
 Help:
 - Keywords: [ "ai", "prompt", "query" ]
   Helptext:
-  - "<query> - Start or continue a threaded conversation with OpenAI (all messages in channel)
+  - "(bot), <query> - Start a conversation with OpenAI"
 # For continuing conversations in a thread
 MessageMatchers:
 - Command: 'ambient'
