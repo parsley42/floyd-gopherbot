@@ -239,7 +239,7 @@ when "status"
       if ai.status.error
         bot.Reply(ai.status.error)
       else
-        bot.Reply("I hear you, but I have no memory of a conversation in this thread; my short-term is only about half a day")
+        bot.Reply("I hear you, but I have no memory of a conversation in this thread; my short-term is only about half a day - you can start a new conversation by addressing me in the main channel")
       end
     end
   else
