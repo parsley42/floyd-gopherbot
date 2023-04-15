@@ -38,18 +38,18 @@ class OpenAI_API
     @memory = @direct ? ShortTermMemoryPrefix : ShortTermMemoryPrefix + ":" + bot.thread_id
     @profile = profile
     @exchanges = []
+    @tokens = 0
     @valid = true
     @remember_conversation = remember_conversation
     @init_conversation = init_conversation
     debug_memory = @bot.Recall(ShortTermMemoryDebugPrefix + ":" + bot.thread_id)
     @debug = (debug_memory.length > 0 or debug)
 
-    tokens = 0
     error = nil
     if (bot.threaded_message or @direct) and @remember_conversation and not @init_conversation
       encoded_state = bot.Recall(@memory)
       state = decode_state(encoded_state)
-      profile, tokens, exchanges = state.values_at("profile", "tokens", "exchanges")
+      profile, @tokens, exchanges = state.values_at("profile", "tokens", "exchanges")
       if exchanges.length > 0
         @exchanges = exchanges
         @profile = profile
@@ -85,7 +85,7 @@ class OpenAI_API
       end
       @client = OpenAI::Client.new
     end
-    @status = ConversationStatus.new(@valid, error, tokens)
+    @status = ConversationStatus.new(@valid, error, @tokens)
   end
 
   def draw(prompt)
