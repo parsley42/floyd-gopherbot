@@ -204,7 +204,7 @@ when "ambient", "prompt", "ai", "continue", "regenerate", "catchall"
       bot.ReplyThread("(#{hold_message})")
     end
   else
-    bot.Reply("(continuing AI conversation ...)")
+    bot.Say("(continuing AI conversation ...)")
   end
   type = init_conversation ? "starting" : "continuing"
   bot.Log(:debug, "#{type} AI conversation with #{ENV["GOPHER_USER"]} in #{ENV["GOPHER_CHANNEL"]}/#{ENV["GOPHER_THREAD_ID"]}")
