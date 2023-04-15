@@ -10,6 +10,8 @@ Help:
   - "(bot), <query> - Start a conversation with OpenAI"
 # For continuing conversations in a thread
 MessageMatchers:
+- Command: 'status'
+  Regex: '(?i:floyd?)'
 - Command: 'ambient'
   Regex: '([\s\S]*)'
 Config:

@@ -3,8 +3,17 @@ require 'json'
 require 'base64'
 require 'digest/sha1'
 
+class ConversationStatus
+  attr_accessor :valid, :error, :tokens
+  def initialize(valid, error, tokens)
+    @valid = valid
+    @error = error
+    @tokens = tokens
+  end
+end
+
 class OpenAI_API
-  attr_reader :valid, :error, :cfg
+  attr_reader :status, :cfg
 
   TokenMemory = "usertokens"
   ShortTermMemoryPrefix = "ai-conversation"
@@ -35,17 +44,18 @@ class OpenAI_API
     debug_memory = @bot.Recall(ShortTermMemoryDebugPrefix + ":" + bot.thread_id)
     @debug = (debug_memory.length > 0 or debug)
 
+    tokens = 0
+    error = nil
     if (bot.threaded_message or @direct) and @remember_conversation and not @init_conversation
       encoded_state = bot.Recall(@memory)
       state = decode_state(encoded_state)
-      profile, exchanges = state.values_at("profile", "exchanges")
+      profile, tokens, exchanges = state.values_at("profile", "tokens", "exchanges")
       if exchanges.length > 0
         @exchanges = exchanges
         @profile = profile
       else
         unless init_conversation
           @valid = false
-          @error = nil
         end
       end
     end
@@ -64,15 +74,18 @@ class OpenAI_API
     unless token and token.length > 0
       @valid = false
       botalias = @bot.GetBotAttribute("alias")
-      @error = "Sorry, you need to add your token first - try '#{botalias}help'"
+      error = "Sorry, you need to add your token first - try '#{botalias}help'"
     end
-    OpenAI.configure do |config|
-      config.access_token = token
-      if @org
-        config.organization_id = @org
+    if @valid
+      OpenAI.configure do |config|
+        config.access_token = token
+        if @org
+          config.organization_id = @org
+        end
       end
+      @client = OpenAI::Client.new
     end
-    @client = OpenAI::Client.new
+    @status = ConversationStatus.new(@valid, error, tokens)
   end
 
   def draw(prompt)
@@ -137,8 +150,8 @@ class OpenAI_API
           "ai" => aitext
         }
       end
-      current_total = usage["total_tokens"]
-      if current_total > @max_context
+      @tokens = usage["total_tokens"]
+      if @tokens > @max_context
         @bot.Log(:warn, "conversation length (#{current_total}) exceeded max_context (#{@max_context}), dropping an exchange")
         @exchanges.shift
       end
@@ -193,6 +206,7 @@ class OpenAI_API
   def encode_state
     state = {
       "profile": @profile,
+      "tokens": @tokens,
       "exchanges": @exchanges
     }
     json = state.to_json
@@ -203,6 +217,7 @@ class OpenAI_API
     unless encoded_state and encoded_state.length > 0
       return {
         "profile" => "",
+        "tokens": 0,
         "exchanges" => []
       }
     end

@@ -32,11 +32,14 @@ Help:
   - "(bot), add-token - add your personal OpenAI token (robot will prompt you in a DM)"
   - "(bot), remove-token - remove your personal OpenAI token"
   - "(bot), debug-ai - add debugging output during interactions"
+  - "(bot), ai-status - in a thread, give conversation status"
 CommandMatchers:
 - Command: 'prompt'
   Regex: '(?i:p(?:rompt)?(?:=([\w-]+))?(?:/(debug)?)?[: ]\s*(.*))'
 - Command: 'debug'
   Regex: '(?i:d(ebug[ -]ai)?)'
+- Command: 'status'
+  Regex: '(?i:ai[ -]status)'
 - Command: 'regenerate'
   Regex: '(?i:r(egenerate|etry|epeat)?)'
 - Command: 'ai'
@@ -183,9 +186,11 @@ when "ambient", "prompt", "ai", "continue", "regenerate", "catchall"
     direct: direct,
     debug: debug
   )
-  unless ai.valid
-    if ai.error
-      bot.SayThread(ai.error)
+  unless ai.status.valid
+    if ai.status.error
+      bot.SayThread(ai.status.error)
+    else
+      bot.Log(:debug, "ignoring message from #{ENV["GOPHER_USER"]} in #{ENV["GOPHER_CHANNEL"]}/#{ENV["GOPHER_THREAD_ID"]} - no conversation memory")
     end
     exit(0)
   end
@@ -204,7 +209,7 @@ when "ambient", "prompt", "ai", "continue", "regenerate", "catchall"
   type = init_conversation ? "starting" : "continuing"
   bot.Log(:debug, "#{type} AI conversation with #{ENV["GOPHER_USER"]} in #{ENV["GOPHER_CHANNEL"]}/#{ENV["GOPHER_THREAD_ID"]}")
   aibot, reply = ai.query(prompt, regenerate)
-  aibot.Say(reply)
+  aibot.Reply(reply)
   ambient_channel = cfg["AmbientChannel"]
   ambient = ambient_channel && ambient_channel == bot.channel
   if remember_conversation and (direct or not ambient) and (command != "continue")
@@ -219,10 +224,31 @@ when "ambient", "prompt", "ai", "continue", "regenerate", "catchall"
   end
 ## END OF CONVERSATION HANDLING
 
+when "status"
+  if bot.threaded_message
+    ai = OpenAI_API.new(bot, "",
+      init_conversation: false,
+      remember_conversation: true,
+      force_thread: false,
+      direct: direct,
+      debug: false
+    )
+    if ai.status.valid
+      bot.Reply("I hear you and remember an AI conversation totalling #{ai.status.tokens} tokens")
+    else
+      if ai.status.error
+        bot.Reply(ai.status.error)
+      else
+        bot.Reply("I hear you, but I have no memory of a conversation in this thread; my short-term is only about half a day")
+      end
+    end
+  else
+    bot.Reply("I can hear you")
+  end
 when "image"
   ai = OpenAI_API.new(bot, profile,
-    init_conversation: init_conversation,
-    remember_conversation: remember_conversation,
+    init_conversation: false,
+    remember_conversation: false,
     force_thread: true,
     direct: direct,
     debug: debug
