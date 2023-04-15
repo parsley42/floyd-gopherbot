@@ -225,7 +225,7 @@ when "ambient", "prompt", "ai", "continue", "regenerate", "catchall"
 ## END OF CONVERSATION HANDLING
 
 when "status"
-  if bot.threaded_message
+  if bot.threaded_message or direct
     ai = OpenAI_API.new(bot, "",
       init_conversation: false,
       remember_conversation: true,

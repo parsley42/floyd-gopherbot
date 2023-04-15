@@ -7,7 +7,9 @@ Help:
   Helptext:
   - "<query> - Start or continue a threaded conversation with OpenAI (all messages that don't match commands)"
 # Since the default plugin allows direct messages, we don't want to repeat in this configuration.
-CommandMatchers: []
+CommandMatchers:
+- Command: 'status'
+  Regex: '(?i:^floyd\?$)'
 MessageMatchers: []
 Config:
 {{ .Include "../aicfg.yaml" }}
