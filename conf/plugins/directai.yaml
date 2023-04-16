@@ -9,7 +9,7 @@ Help:
 # Since the default plugin allows direct messages, we don't want to repeat in this configuration.
 CommandMatchers:
 - Command: 'status'
-  Regex: '(?i:^floyd\?$)'
+  Regex: '^\?$'
 MessageMatchers: []
 Config:
 {{ .Include "../aicfg.yaml" }}

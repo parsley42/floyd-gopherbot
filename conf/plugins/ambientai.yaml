@@ -9,11 +9,11 @@ Help:
   Helptext:
   - "(bot), <query> - Start a conversation with OpenAI"
 # Don't duplicate commands from the main plugin
-CommandMatchers: []
+CommandMatchers:
+- Command: 'status'
+  Regex: '^\?$'
 # For continuing conversations in a thread
 MessageMatchers:
-- Command: 'status'
-  Regex: '(?i:^floyd\?$)'
 - Command: 'ambient'
   Regex: '([\s\S]*)'
 Config:
