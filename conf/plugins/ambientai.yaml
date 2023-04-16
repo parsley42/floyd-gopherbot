@@ -8,6 +8,8 @@ Help:
 - Keywords: [ "ai", "prompt", "query" ]
   Helptext:
   - "(bot), <query> - Start a conversation with OpenAI"
+# Don't duplicate commands from the main plugin
+CommandMatchers: []
 # For continuing conversations in a thread
 MessageMatchers:
 - Command: 'status'
