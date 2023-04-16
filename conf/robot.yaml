@@ -64,7 +64,7 @@ BotInfo:
 
 # If a plugin doesn't specify otherwise it will be active in these channels;
 # defaults to all channels
-DefaultChannels: [ "ai" ]
+DefaultChannels: [ "floyd-jobs" ]
 
 # One-character alias the bot can be called by. Note: not all single characters
 # are supported. If your robot doesn't respond to e.g. ";ping", try changing
@@ -85,14 +85,14 @@ GoPlugins:
 # script library. The robot will look for plugins in the installation directory
 # first, then the local config directory.
 ExternalPlugins:
-  "weather":
-    Path: plugins/weather.rb
-    Description: A plugin using OpenWeatherMap to give the weather
-    Parameters:
-    - Name: TEMP_UNITS
-      Value: imperial # or 'metric'
-    - Name: DEFAULT_COUNTRY
-      Value: 'us' # or other ISO 3166 country code
+  # "weather":
+  #   Path: plugins/weather.rb
+  #   Description: A plugin using OpenWeatherMap to give the weather
+  #   Parameters:
+  #   - Name: TEMP_UNITS
+  #     Value: imperial # or 'metric'
+  #   - Name: DEFAULT_COUNTRY
+  #     Value: 'us' # or other ISO 3166 country code
   "ai":
     Path: plugins/ai.rb
     Description: A trivial plugin wrapping the OpenAI completions API
@@ -108,52 +108,52 @@ ExternalPlugins:
     Description: A trivial plugin wrapping the OpenAI completions API
     ParameterSets:
     - "openai"
-  "util":
-    Description: A convenience plugin for various tasks
-    Path: plugins/util.sh
-  "pythondemo":
-    Path: plugins/samples/pythondemo.py
+  # "util":
+  #   Description: A convenience plugin for various tasks
+  #   Path: plugins/util.sh
+  # "pythondemo":
+  #   Path: plugins/samples/pythondemo.py
 ExternalJobs:
-  "cloud9wks":
-    Description: Job to launch a Cloud9 Instance
-    Path: jobs/c9wks.sh
-    Parameters:
-    - Name: AWS_REGION
-      Value: us-east-1
+  # "cloud9wks":
+  #   Description: Job to launch a Cloud9 Instance
+  #   Path: jobs/c9wks.sh
+  #   Parameters:
+  #   - Name: AWS_REGION
+  #     Value: us-east-1
   "backup":
     Disabled: true
   "restore":
     Disabled: true
-  "bender":
-    Description: Job to launch a spot instance for Bender and configure it
-    Path: jobs/bender.sh
-    Parameters:
-    - Name: AWS_REGION
-      Value: us-east-1
-  "cloud9f28":
-    Description: Job to launch a Fedora 28 Cloud9 Instance
-    Path: jobs/c9wks.sh
-    Parameters:
-    - Name: DEVHOST
-      Value: f28devel
-    - Name: DEVIMG
-      Value: f28devel
-    - Name: AWS_REGION
-      Value: us-east-1
+  # "bender":
+  #   Description: Job to launch a spot instance for Bender and configure it
+  #   Path: jobs/bender.sh
+  #   Parameters:
+  #   - Name: AWS_REGION
+  #     Value: us-east-1
+  # "cloud9f28":
+  #   Description: Job to launch a Fedora 28 Cloud9 Instance
+  #   Path: jobs/c9wks.sh
+  #   Parameters:
+  #   - Name: DEVHOST
+  #     Value: f28devel
+  #   - Name: DEVIMG
+  #     Value: f28devel
+  #   - Name: AWS_REGION
+  #     Value: us-east-1
 ExternalTasks:
 # Floyd job tasks
-  "build-c9wks":
-    Description: Task that launches and configures the Cloud9 instance
-    Path: tasks/build-c9wks.sh
-    Parameters:
-    - Name: KEYNAME
-      Value: floyd
-  "wake-bender":
-    Description: Task that launches and configures the instance for Bender
-    Path: tasks/wake-bender.sh
-    Parameters:
-    - Name: KEYNAME
-      Value: floyd
+  # "build-c9wks":
+  #   Description: Task that launches and configures the Cloud9 instance
+  #   Path: tasks/build-c9wks.sh
+  #   Parameters:
+  #   - Name: KEYNAME
+  #     Value: floyd
+  # "wake-bender":
+  #   Description: Task that launches and configures the instance for Bender
+  #   Path: tasks/wake-bender.sh
+  #   Parameters:
+  #   - Name: KEYNAME
+  #     Value: floyd
 # /Floyd job tasks
 NameSpaces:
   "ssh":
