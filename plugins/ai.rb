@@ -190,6 +190,9 @@ when "ambient", "prompt", "ai", "continue", "regenerate", "catchall"
     if ai.status.error
       bot.SayThread(ai.status.error)
     else
+      if catchall
+        bot.Reply("Sorry, I don't remember a conversation with you in this thread - but you can start a new AI converstaion with me in the main channel")
+      end
       bot.Log(:debug, "ignoring message from #{ENV["GOPHER_USER"]} in #{ENV["GOPHER_CHANNEL"]}/#{ENV["GOPHER_THREAD_ID"]} - no conversation memory")
     end
     exit(0)
@@ -239,7 +242,7 @@ when "status"
       if ai.status.error
         bot.Reply(ai.status.error)
       else
-        bot.Reply("I hear you, but I have no memory of a conversation in this thread; my short-term is only about half a day - you can start a new conversation by addressing me in the main channel")
+        bot.Reply("I hear you, but I have no memory of a conversation in this thread; my short-term is only about half a day - you can start a new AI conversation by addressing me in the main channel")
       end
     end
   else
