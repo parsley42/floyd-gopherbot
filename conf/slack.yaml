@@ -1,6 +1,6 @@
 # List of users that can issue admin commands like reload, quit. Should be
 # a list of user handles / nicks.
-AdminUsers: [ "parsley", "meekohi" ]
+AdminUsers: [ "parse", "meekohi" ]
 ProtocolConfig:
   ## LinuxJedi Slack team
   # AppToken: xapp-{{ decrypt "sSb5yQGaOs0ekbUzv51xJzyuusyV7Ol3e4+EzpO2lsYBp/XKRe8z5xi5PiWVe7qTWOdLendssmJWv7brTqtXAivMXUGcwg+VFZY5QWY8hJXl58HCaMlpmlUMSqfg/Atoqli6MzTOPk9BjV5hyhNgvH3Wdovj9olN" }}
