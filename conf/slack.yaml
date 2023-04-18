@@ -18,7 +18,7 @@ UserRoster:
     UserID: U0533UX66LT
     BotUser: true
   # Clu is the dev bot on my laptop
-  - UserName: parsley
+  - UserName: parse
     UserID: U0ECQ0W76
   - UserName: meekohi
     UserID: U0D6TFPPZ
