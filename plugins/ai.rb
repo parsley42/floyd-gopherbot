@@ -102,6 +102,9 @@ when "configure"
   exit(0)
 end
 
+success = bot.Exclusive("ai", false)
+exit(0)
+
 direct = (bot.channel == "")
 
 case command
