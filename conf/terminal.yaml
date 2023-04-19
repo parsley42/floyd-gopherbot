@@ -28,6 +28,13 @@ ProtocolConfig:
     FirstName: "David"
     LastName: "Parsley"
     Phone: "(555)765-0007"
+  - Name: "clu"
+    Email: "parsley@linuxjedi.org"
+    InternalID: "u0008"
+    FullName: "Clu Gopherbot"
+    FirstName: "Clu"
+    LastName: "Gopherbot"
+    Phone: "(555)765-0008"
 
 AppendUserRoster:
 - UserName: "parse"
