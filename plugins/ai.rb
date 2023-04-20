@@ -191,7 +191,7 @@ when "ambient", "prompt", "ai", "continue", "regenerate", "catchall"
   )
   unless ai.status.valid
     if ai.status.error
-      bot.SayThread(ai.status.error)
+      bot.ReplyThread(ai.status.error)
     else
       if catchall
         bot.Reply("Sorry, I don't remember a conversation with you in this thread - but you can start a new AI converstaion with me in the main channel")
