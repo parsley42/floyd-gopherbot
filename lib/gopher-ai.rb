@@ -35,6 +35,13 @@ class OpenAI_API
     @force_thread = force_thread
     @bot = @force_thread ? bot.Threaded : bot
     @direct = direct
+    if direct
+      @memory = ShortTermMemoryPrefix
+      exclusive = "#{ShortTermMemoryPrefix}:#{ENV["GOPHER_USER_ID"]}"
+    else
+      @memory = "#{ShortTermMemoryPrefix}:#{bot.thread_id}"
+      exclusive = "#{ShortTermMemoryPrefix}:#{bot.channel}:#{bot.thread_id}"
+    end
     @memory = @direct ? ShortTermMemoryPrefix : ShortTermMemoryPrefix + ":" + bot.thread_id
     @profile = profile
     @exchanges = []
@@ -46,6 +53,12 @@ class OpenAI_API
     @debug = (debug_memory.length > 0 or debug)
 
     error = nil
+    unless bot.Exclusive(exclusive, false)
+      verb = bot.RandomString(["pondering", "working", "thinking", "cogitating"])
+      error = "(message not processed, AI still #{verb}; you can resend or edit after reply)"
+      @status = ConversationStatus.new(false, error, 0)
+      return
+    end
     if (bot.threaded_message or @direct) and @remember_conversation and not @init_conversation
       encoded_state = bot.Recall(@memory)
       state = decode_state(encoded_state)
