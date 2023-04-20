@@ -11,17 +11,9 @@ configure(){
   cat <<"EOF"
 AllowDirect: true
 Help:
-- Keywords: [ "wake", "bender" ]
-  Helptext: [ "(bot), wake bender - get Bender up and running for development" ]
-- Keywords: [ "code", "program" ]
-  Helptext: [ "(bot), start workstation - launch a Cloud9 developer spot instance" ]
 - Keywords: [ "dinner" ]
   Helptext: [ "(bot), dinner? - pick random dinner meals" ]
 CommandMatchers:
-- Command: "wake"
-  Regex: '(?i:wake bender)'
-- Command: "code"
-  Regex: '(?i:start (?:coding|workstation))'
 - Command: "dinner"
   Regex: "(?i:(what's for )?dinner\\??)"
 - Command: "moredinner"
@@ -31,7 +23,11 @@ EOF
 
 case "$COMMAND" in
   "init")
-    SendChannelMessage "ai" "Floyd here now!"
+    if [ ! -e ".wokeup" ]
+    then
+      SendChannelMessage "ai" "Floyd here now!"
+      touch ".wokeup"
+    fi
     ;;
   "configure")
     configure
