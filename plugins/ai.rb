@@ -146,9 +146,9 @@ when "ambient", "prompt", "ai", "continue", "regenerate", "catchall"
   if command == "catchall"
     catchall = true
     if direct
-      short_term_memory = bot.Recall(OpenAI_API::ShortTermMemoryPrefix)
+      short_term_memory = bot.Recall(OpenAI_API::ShortTermMemoryPrefix, true)
       if short_term_memory.length > 0
-        bot.Remember(OpenAI_API::ShortTermMemoryPrefix, short_term_memory)
+        bot.Remember(OpenAI_API::ShortTermMemoryPrefix, short_term_memory, true)
         command = "continue"
       else
         command = "prompt"
@@ -215,7 +215,7 @@ when "ambient", "prompt", "ai", "continue", "regenerate", "catchall"
   type = init_conversation ? "starting" : "continuing"
   bot.Log(:debug, "#{type} AI conversation with #{ENV["GOPHER_USER"]} in #{ENV["GOPHER_CHANNEL"]}/#{ENV["GOPHER_THREAD_ID"]}")
   aibot, reply = ai.query(prompt, regenerate)
-  aibot.Reply(reply)
+  aibot.Say(reply)
   ambient_channel = cfg["AmbientChannel"]
   ambient = ambient_channel && ambient_channel == bot.channel
   if remember_conversation and (direct or not ambient) and (command != "continue")
@@ -274,7 +274,7 @@ when "debug"
     bot.SayThread("You can only initialize debugging in a conversation thread")
     exit(0)
   end
-  bot.Remember(OpenAI_API::ShortTermMemoryDebugPrefix + ":" + bot.thread_id, "true")
+  bot.Remember(OpenAI_API::ShortTermMemoryDebugPrefix + ":" + bot.thread_id, "true", true)
   bot.SayThread("(ok, debugging output is enabled for this conversation)")
 when "token"
   rep = bot.PromptUserForReply("SimpleString", "OpenAI token?")
