@@ -22,8 +22,8 @@ UserRoster:
     UserID: U0ECQ0W76
   - UserName: meekohi
     UserID: U0D6TFPPZ
-  - UserName: woolsey
-    UserID: UM273SVFA
+  # - UserName: woolsey
+  #   UserID: UM273SVFA
   ## LinuxJedi
   # - UserName: parsley
   #   UserID: U0JLW8EMS
