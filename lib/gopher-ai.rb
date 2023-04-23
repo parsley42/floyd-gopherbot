@@ -20,6 +20,7 @@ class OpenAI_API
   ShortTermMemoryDebugPrefix = "ai-debug"
   DefaultProfile = "default"
   PartialLineLength = 42
+  ThinkingStrings = [ "pondering", "working", "thinking", "cogitating", "processing", "analyzing" ]
 
   def initialize(bot, profile,
       init_conversation:,
@@ -54,7 +55,7 @@ class OpenAI_API
 
     error = nil
     unless bot.Exclusive(exclusive, false)
-      verb = bot.RandomString(["pondering", "working", "thinking", "cogitating"])
+      verb = bot.RandomString(ThinkingStrings)
       error = "(message not processed, AI still #{verb}; you can resend or edit after reply)"
       @status = ConversationStatus.new(false, error, 0)
       return
