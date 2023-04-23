@@ -171,6 +171,9 @@ class OpenAI_API
       end
       @bot.Remember(@memory, encode_state, true)
     end
+    if ENV["GOPHER_PROTOCOL"] == "slack"
+      aitext = aitext.gsub(/```\w+\n/) { |language| "#{language[3..-2]}:\n```\n" }
+    end
     return @bot, aitext
   end
 
