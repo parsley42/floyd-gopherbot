@@ -1,7 +1,7 @@
 # This is the non-sensitive configuration for Bender, the gopherbot used
 # for development.
 
-LogLevel: debug
+LogLevel: {{ env "GOPHER_LOGLEVEL" | default "debug" }}
 
 # Port to listen on for http/JSON api calls, for external plugins
 #LocalPort: 8888

@@ -110,17 +110,12 @@ direct = (bot.channel == "")
 case command
 # All the conversation commands
 # "catchall" for all messages sent to Floyd that didn't match other commands
-# "ambient" for all messages in the ai channel
+# "subscribed" for all messages in a subscribed thread
 # "continue" for an explicit continuation
 # "ai" for one-shot (non-continuing) queries
 # "regenerate" to resend the last query
-when "ambient", "prompt", "ai", "continue", "regenerate", "catchall"
+when "subscribed", "prompt", "ai", "continue", "regenerate", "catchall"
   bot.Log(:debug, "handling conversation command '#{command}' from #{ENV["GOPHER_USER"]}/#{ENV["GOPHER_USER_ID"]} in channel #{ENV["GOPHER_CHANNEL"]}/t:#{ENV["GOPHER_THREAD_ID"]}")
-  if command == "ambient" and not bot.threaded_message
-    bot.Log(:debug, "ignoring ambient channel message from #{ENV["GOPHER_USER_ID"]}")
-    ## We never match ambiently in the channel; messages must be directed at the robot
-    exit(0)
-  end
   init_conversation = false
   remember_conversation = true
   force_thread = false
@@ -131,7 +126,7 @@ when "ambient", "prompt", "ai", "continue", "regenerate", "catchall"
   if direct and command == "ai"
     command = "prompt"
   end
-  if command == "ambient" or command == "continue" or command == "catchall"
+  if command == "subscribed" or command == "continue" or command == "catchall"
     profile = ""
     prompt = ARGV.shift
   else
@@ -154,11 +149,11 @@ when "ambient", "prompt", "ai", "continue", "regenerate", "catchall"
         command = "prompt"
       end
     else
-      command = "ambient"
+      command = "subscribed"
     end
   end
   case command
-  when "ambient"
+  when "subscribed"
     init_conversation = true unless bot.threaded_message
     force_thread = true
   when "ai"
@@ -207,6 +202,7 @@ when "ambient", "prompt", "ai", "continue", "regenerate", "catchall"
     if command == "ai"
       bot.Say("(#{hold_message})")
     else
+      bot.Subscribe()
       bot.ReplyThread("(#{hold_message})")
     end
   else

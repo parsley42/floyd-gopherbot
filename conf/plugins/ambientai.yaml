@@ -12,11 +12,6 @@ Help:
 CommandMatchers:
 - Command: 'status'
   Regex: '^\?$'
-# For continuing conversations in a thread
-MatchUnlisted: true
-MessageMatchers:
-- Command: 'ambient'
-  Regex: '([\s\S]*)'
 Config:
   AmbientChannel: "ai"
 {{ .Include "../aicfg.yaml" }}
