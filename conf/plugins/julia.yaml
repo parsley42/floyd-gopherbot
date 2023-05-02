@@ -1,0 +1,48 @@
+---
+## Example plugin configuration file showing most configurable items.
+
+## NOTE: If you're modifying the configuration of an existing Gopherbot
+## plugin, configured items merge with the default config, and arrays are
+## replaced. To add e.g. Help entries, copy the original help entries and
+## then add your own.
+
+## Compiled-in go plugins can be disabled
+Disabled: false
+## When true, this plugin can be activated by direct message. Normally
+## plugins can only be used in a given channel for auditing/transparency.
+AllowDirect: true
+## On the other hand, some plugins may need sensitive information that should
+## only be available in a direct message.
+DirectOnly: false
+## For robots with many plugins, it's useful to have some that are only
+## available in certain channels. Maybe the bug search plugin is only available
+## in the #bugfixing channel
+#Channels: [ "aws", "golang" ]
+## Some plugins, like 'ping', are nice to have in all channels
+AllChannels: false
+## Most plugins that are limited to certain users will have an explicit list
+## of allowed users, but a plugin can also be configured for Administrators
+## only. Gopherbot may eventually get a more granular permissions system
+## if needed, but for now none is planned.
+RequireAdmin: false
+## To limit access to a plugin to specific users, list there usernames
+#Users: [ "alice", "bob", "carol" ]
+## You can require users to be members of a group
+#Authorizer: groups
+## For groups, the AuthRequire is the name of the group
+#AuthRequire: monkeys
+## When help <keyword> is requested, the robot will spit out the items in
+## Helptext. By convention, commands that must be directed at the robot
+## start with "(bot),"
+Help:
+- Keywords: [ "hello", "julia" ]
+  Helptext:
+  - (bot), hello julia - Runs the trivial Julia hello, world
+# - (bot), <some command> - <description of what the command does>
+## Command matches can be matched when the user addresses the robot directly,
+## either in a direct message, or by giving it's name or alias. The Regex
+## is a Go regular expression, easily developed by using the tool at:
+## https://regex-golang.appspot.com/assets/html/index.html
+CommandMatchers:
+- Regex: '(?i:hello julia)'
+  Command: hello

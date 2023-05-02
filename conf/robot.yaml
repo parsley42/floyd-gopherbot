@@ -110,6 +110,9 @@ ExternalPlugins:
   "util":
     Description: A convenience plugin for various tasks
     Path: plugins/util.sh
+  "julia":
+    Description: A hello, world example in Julia
+    Path: plugins/hello.jl
   # "pythondemo":
   #   Path: plugins/samples/pythondemo.py
 ExternalJobs:
