@@ -4,11 +4,12 @@ require 'base64'
 require 'digest/sha1'
 
 class ConversationStatus
-  attr_accessor :valid, :error, :tokens
-  def initialize(valid, error, tokens)
+  attr_accessor :valid, :error, :tokens, :in_progress
+  def initialize(valid, error, tokens, in_progress)
     @valid = valid
     @error = error
     @tokens = tokens
+    @in_progress = in_progress
   end
 end
 
@@ -24,7 +25,7 @@ class OpenAI_API
   def initialize(bot,
       direct:,
       botalias:,
-      botname:,
+      botname:
     )
     # For now, static profile
     @profile = DefaultProfile
@@ -32,6 +33,7 @@ class OpenAI_API
     @alias = botalias
     @name = botname
     @bot = direct ? bot : bot.Threaded
+    in_progress = false
     if direct
       @memory = ShortTermMemoryPrefix
       exclusive = "#{ShortTermMemoryPrefix}:#{ENV["GOPHER_USER_ID"]}"
@@ -49,18 +51,18 @@ class OpenAI_API
     unless bot.Exclusive(exclusive, false)
       verb = bot.RandomString(ThinkingStrings)
       error = "(message not processed, AI still #{verb}; you can resend or edit after reply)"
-      @status = ConversationStatus.new(false, error, 0)
+      @status = ConversationStatus.new(false, error, 0, false)
       return
     end
     encoded_state = bot.Recall(@memory, true)
     if encoded_state.length > 0
       state = decode_state(encoded_state)
+      in_progress = true
       @profile, @tokens, @owner, @exchanges = state.values_at("profile", "tokens", "owner" "exchanges")
     else
       @owner = ENV["GOPHER_USER"]
     end
     @cfg = bot.GetTaskConfig()
-    puts("cfg: #{@cfg}")
     @settings = @cfg["Profiles"][@profile]
     unless @settings
       @profile = "default"
@@ -86,7 +88,7 @@ class OpenAI_API
       end
       @client = OpenAI::Client.new
     end
-    @status = ConversationStatus.new(@valid, error, @tokens)
+    @status = ConversationStatus.new(@valid, error, @tokens, in_progress)
   end
 
   def draw(prompt)
@@ -94,21 +96,9 @@ class OpenAI_API
     return response.dig("data", 0, "url")
   end
 
-  def query(input, regenerate = false)
-    if regenerate
-      unless @exchanges.length > 0
-        @bot.Say("Eh... I can't recall a previous query")
-        exit(0)
-      end
-      @bot.Say("(ok, I'll re-send the previous chat content)")
-      last_exchange = @exchanges.pop
-      input = last_exchange["human"]
-    end
+  def query(input)
     while true
       messages, partial = build_messages("#{@bot.user} says: #{input}")
-      if @bot.channel == "mock" and @bot.protocol == "terminal"
-        puts("DEBUG full chat:\n#{messages}")
-      end
       parameters = @settings["params"]
       parameters["user"] = Digest::SHA1.hexdigest(ENV["GOPHER_USER_ID"])
       if @debug
@@ -144,20 +134,18 @@ class OpenAI_API
     usage = response["usage"]
     @bot.Log(:debug, "usage: prompt #{usage["prompt_tokens"]}, completion #{usage["completion_tokens"]}, total #{usage["total_tokens"]}")
     aitext.strip!
-    if @remember_conversation
-      if input.length > 0
-        @exchanges << {
-          "human" => input,
-          "ai" => aitext
-        }
-      end
-      @tokens = usage["total_tokens"]
-      if @tokens > @max_context
-        @bot.Log(:warn, "conversation length (#{current_total}) exceeded max_context (#{@max_context}), dropping an exchange")
-        @exchanges.shift
-      end
-      @bot.Remember(@memory, encode_state, true)
+    if input.length > 0
+      @exchanges << {
+        "human" => input,
+        "ai" => aitext
+      }
     end
+    @tokens = usage["total_tokens"]
+    if @tokens > @max_context
+      @bot.Log(:warn, "conversation length (#{current_total}) exceeded max_context (#{@max_context}), dropping an exchange")
+      @exchanges.shift
+    end
+    @bot.Remember(@memory, encode_state, true)
     if ENV["GOPHER_PROTOCOL"] == "slack"
       aitext = aitext.gsub(/```\w+\n/) { |language| "#{language[3..-2]}:\n```\n" }
     end

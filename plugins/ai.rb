@@ -43,43 +43,26 @@ when "catchall", "subscribed"
   unless ai.status.valid
     if ai.status.error
       bot.ReplyThread(ai.status.error)
-    else
-      if catchall
-        bot.Reply("Sorry, I don't remember a conversation with you in this thread - but you can start a new AI converstaion with me in the main channel")
-      end
-      bot.Log(:debug, "ignoring message from #{ENV["GOPHER_USER"]} in #{ENV["GOPHER_CHANNEL"]}/#{ENV["GOPHER_THREAD_ID"]} - no conversation memory")
     end
     exit(0)
   end
+  prompt = ARGV.shift()
+  if cmdmode == "name"
+    prompt = "#{botname}, #{prompt}"
+  end
   cfg = ai.cfg
-  if init_conversation
+  unless ai.status.in_progress
     hold_messages = cfg["WaitMessages"]
     hold_message = bot.RandomString(hold_messages)
-    if command == "ai"
-      bot.Say("(#{hold_message})")
-    else
-      bot.Subscribe()
-      bot.ReplyThread("(#{hold_message})")
-    end
+    bot.Subscribe()
+    bot.ReplyThread("(#{hold_message})")
   else
     bot.Say("(#{bot.RandomString(OpenAI_API::ThinkingStrings)})")
   end
-  type = init_conversation ? "starting" : "continuing"
+  type = ai.status.in_progress ? "continuing" : "starting"
   bot.Log(:debug, "#{type} AI conversation with #{ENV["GOPHER_USER"]} in #{ENV["GOPHER_CHANNEL"]}/#{ENV["GOPHER_THREAD_ID"]}")
-  aibot, reply = ai.query(prompt, regenerate)
+  aibot, reply = ai.query(prompt)
   aibot.Say(reply)
-  ambient_channel = cfg["AmbientChannel"]
-  ambient = ambient_channel && ambient_channel == bot.channel
-  if remember_conversation and (direct or not ambient) and (command != "continue")
-    follow_up_command = direct ? "c:" : botalias + "c"
-    regenerate_command = direct ? "r" : botalias + "r"
-    prompt_command = direct ? "p" : botalias + "p"
-    if catchall
-      aibot.Say("(use '#{prompt_command} <query>' to start a new conversation, or '#{regenerate_command}' to re-send the last prompt)")
-    else
-      aibot.Say("(use '#{follow_up_command} <follow-up text>' to continue the conversation, or '#{regenerate_command}' to re-send the last prompt)")
-    end
-  end
 ## END OF CONVERSATION HANDLING
 
 when "status"
