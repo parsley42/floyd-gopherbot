@@ -94,17 +94,7 @@ ExternalPlugins:
   #     Value: 'us' # or other ISO 3166 country code
   "ai":
     Path: plugins/ai.rb
-    Description: A trivial plugin wrapping the OpenAI completions API
-    ParameterSets:
-    - "openai"
-  "ambientai":
-    Path: plugins/ai.rb
-    Description: A trivial plugin wrapping the OpenAI completions API
-    ParameterSets:
-    - "openai"
-  "directai":
-    Path: plugins/ai.rb
-    Description: A trivial plugin wrapping the OpenAI completions API
+    Description: A plugin wrapping the OpenAI completions API
     ParameterSets:
     - "openai"
   "util":

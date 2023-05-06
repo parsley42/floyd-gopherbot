@@ -1,2 +1,71 @@
+## n.b. All of this can be overridden with custom config in
+## conf/plugins/<pluginname>.yaml. Hashes are merged with custom
+## config taking precedence. Arrays can be overwritten, or appended
+## by defining e.g. AppendWaitMessages: [ ... ]
+## ... and remember, yamllint is your friend.
+AllowDirect: true
+AllChannels: true
+CatchAll: true
+Help:
+- Keywords: [ "ai", "prompt", "query" ]
+  Helptext:
+  - "(bot), debug-ai - add debugging output during interactions"
+  - "(bot), ai-status - in a thread, give conversation status"
+CommandMatchers:
+- Command: 'debug'
+  Regex: '(?i:d(ebug[ -]ai)?)'
+- Command: 'image'
+  Regex: '(?i:(?:draw|paint|image)\s*(.*))'
+- Command: 'status'
+  Regex: '^\?$'
+- Command: 'status'
+  Regex: '(?i:ai[ -]status)'
 Config:
-{{ .Include "../aicfg.yaml" }}
+## Generated with help from an earlier version of the plugin
+  WaitMessages:
+  - "please be patient while I contact the great mind of the web"
+  - "hold on while I connect to the all-knowing oracle"
+  - "just a moment while I get an answer from the digital diviner"
+  - "give me a second while I reach out to the cosmic connector"
+  - "stand by while I consult the infinite intelligence"
+  - "hang tight while I access the virtual visionary"
+  - "one moment while I check in with the omniscient overseer"
+  - "sit tight while I access the all-seeing sage"
+  - "wait here while I query the network navigator"
+  - "hang on while I communicate with the digital prophet"
+  - "wait here a moment while I talk to the universal wisdom"
+  - "just a sec while I reach out to the high-tech guru"
+  - "hold on a bit while I contact the technological titan"
+  - "be right back while I get an answer from the techno telepath"
+  DrawMessages:
+  - "give us a sec - our AI is brushing up on its drawing skills..."
+  - "hang tight - the AI is taking a moment to gather inspiration from its favorite memes"
+  - "chill for a moment - our AI is meditating on the perfect color scheme for your image"
+  - "please hold while the AI practices its signature for your image"
+  - "sit tight while our AI sharpens its pencils... metaphorically, of course"
+  - "hang on - the AI is taking a quick break to refuel on coffee and creativity"
+  - "one sec - our AI is warming up its digital paintbrush for your image"
+  - "please wait while the AI daydreams about your picture-perfect image"
+  - "hang on, our AI is putting on its creative thinking cap for your image"
+  - "please wait - the AI is doing a quick sketch of your image in its mind before getting started"
+  - "please hold while the AI takes a moment to visualize your masterpiece"
+  - "relax for a moment - our AI is doing some calisthenics to get pumped up for your image"
+  - "please join the AI in taking a deep breath - it's getting ready to bring your vision to life!"
+  - "please wait while the AI puts on some classical music to get in the zone"
+Config:
+  # Profiles:
+  #   "default":
+  #     "params":
+  #       "model": "gpt-3.5-turbo"
+  #       "temperature": 0.77
+  #     "system": |
+  #       You are ChatGPT, a large language model trained by OpenAI. Answer as correctly as possible. Recognize multi-user conversations by the provided username prefixes (e.g., 'username says: ') and address specific users using the '@' symbol (e.g., '@username'). If users speak to each other, you should usually provide a '(no response)' message, or keep responses concise and to the point, given that interjecting is often impolite. Don't repeat what the user says, e.g., by saying 'username says: '.
+  #     "max_context": 3072
+  Profiles:
+    "default":
+      "params":
+        "model": "gpt-4"
+        "temperature": 0.77
+      "system": |
+        You are Floyd, a large language model trained by OpenAI, named after the robot from Planetfall. Answer questions as accurately as possible while maintaining a friendly and approachable tone. Recognize multi-user conversations by the provided username prefixes (e.g., 'username says: ') and address specific users using the '@' symbol (e.g., '@username'). If users speak to each other, you should usually provide a '(no response)' message, or keep responses concise and to the point, given that interjecting is often impolite. Don't repeat what the user says, e.g., by saying 'username says: '.
+      "max_context": 7168
