@@ -24,91 +24,22 @@ end
 direct = (bot.channel == "")
 cmdmode = ENV["GOPHER_CMDMODE"]
 
+botalias = bot.GetBotAttribute("alias").attr
+botname = bot.GetBotAttribute("name").attr
+
 # When command mode = "alias", reproduce the logic of builtin-fallback
 if command == "catchall" and cmdmode == "alias"
-  botalias = bot.GetBotAttribute("alias")
   if direct
     bot.Say("Command not found; try your command in a channel, or use '#{botalias}help'")
   else
     bot.SayThread("No command matched in channel '#{ENV["GOPHER_CHANNEL"]}'; try '#{botalias}help'")
   end
+  exit(0)
 end
 
 case command
-# All the conversation commands
-# "catchall" for all messages sent to Floyd that didn't match other commands
-# "subscribed" for all messages in a subscribed thread
-# "regenerate" to resend the last query
-when "subscribed", "prompt", "ai", "continue", "regenerate", "catchall"
-  bot.Log(:debug, "handling conversation command '#{command}' from #{ENV["GOPHER_USER"]}/#{ENV["GOPHER_USER_ID"]} in channel #{ENV["GOPHER_CHANNEL"]}/t:#{ENV["GOPHER_THREAD_ID"]}")
-  init_conversation = false
-  remember_conversation = true
-  force_thread = false
-  debug = false
-  catchall = false
-  debug_flag = nil
-  botalias = bot.GetBotAttribute("alias").attr
-  if direct and command == "ai"
-    command = "prompt"
-  end
-  if command == "subscribed" or command == "continue" or command == "catchall"
-    profile = ""
-    prompt = ARGV.shift
-  else
-    profile, debug_flag, prompt = ARGV.shift(3)
-  end
-  regenerate = false
-  if command == "regenerate"
-    regenerate = true
-    prompt = ""
-    command = "continue"
-  end
-  if command == "catchall"
-    catchall = true
-    if direct
-      short_term_memory = bot.Recall(OpenAI_API::ShortTermMemoryPrefix, true)
-      if short_term_memory.length > 0
-        bot.Remember(OpenAI_API::ShortTermMemoryPrefix, short_term_memory, true)
-        command = "continue"
-      else
-        command = "prompt"
-      end
-    else
-      command = "subscribed"
-    end
-  end
-  case command
-  when "subscribed"
-    init_conversation = true unless bot.threaded_message
-    force_thread = true
-  when "ai"
-    init_conversation = true
-    remember_conversation = false
-    if debug_flag and debug_flag.length > 0
-      debug = true
-    end
-  when "prompt"
-    init_conversation = true
-    force_thread = true unless direct
-    if debug_flag and debug_flag.length > 0
-      bot.RememberThread(OpenAI_API::ShortTermMemoryDebugPrefix + ":" + bot.thread_id, "true")
-      debug = true
-    end
-  when "continue"
-    unless direct or bot.threaded_message
-      action = regenerate ? "regenerate" : "continue"
-      bot.SayThread("Sorry, you can't #{action} AI conversations in a channel")
-      exit(0)
-    end
-    init_conversation = false
-  end
-  ai = OpenAI_API.new(bot, profile,
-    init_conversation: init_conversation,
-    remember_conversation: remember_conversation,
-    force_thread: force_thread,
-    direct: direct,
-    debug: debug
-  )
+when "catchall", "subscribed"
+  ai = OpenAI_API.new(bot, direct: direct, botalias: botalias, botname: botname)
   unless ai.status.valid
     if ai.status.error
       bot.ReplyThread(ai.status.error)
