@@ -58,7 +58,7 @@ class OpenAI_API
     if encoded_state.length > 0
       state = decode_state(encoded_state)
       in_progress = true
-      @profile, @tokens, @owner, @exchanges = state.values_at("profile", "tokens", "owner" "exchanges")
+      @profile, @tokens, @owner, @exchanges = state.values_at("profile", "tokens", "owner", "exchanges")
     else
       @owner = ENV["GOPHER_USER"]
     end
@@ -97,8 +97,9 @@ class OpenAI_API
   end
 
   def query(input)
+    input = "#{@bot.user} says: #{input}"
     while true
-      messages, partial = build_messages("#{@bot.user} says: #{input}")
+      messages, partial = build_messages(input)
       parameters = @settings["params"]
       parameters["user"] = Digest::SHA1.hexdigest(ENV["GOPHER_USER_ID"])
       if @debug

@@ -47,9 +47,6 @@ when "catchall", "subscribed"
     exit(0)
   end
   prompt = ARGV.shift()
-  if cmdmode == "name"
-    prompt = "#{botname}, #{prompt}"
-  end
   cfg = ai.cfg
   unless ai.status.in_progress
     hold_messages = cfg["WaitMessages"]
