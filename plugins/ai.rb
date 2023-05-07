@@ -38,7 +38,8 @@ if command == "catchall" and cmdmode == "alias"
 end
 
 case command
-when "catchall", "subscribed"
+# For dedicated AI channels, use a MessageMatcher of .* and ChannelOnly: true
+when "ambient", "catchall", "subscribed"
   ai = OpenAI_API.new(bot, direct: direct, botalias: botalias, botname: botname)
   unless ai.status.valid
     if ai.status.error
@@ -60,37 +61,45 @@ when "catchall", "subscribed"
   bot.Log(:debug, "#{type} AI conversation with #{ENV["GOPHER_USER"]} in #{ENV["GOPHER_CHANNEL"]}/#{ENV["GOPHER_THREAD_ID"]}")
   aibot, reply = ai.query(prompt)
   aibot.Say(reply)
-## END OF CONVERSATION HANDLING
-
+when "close"
+  ai = OpenAI_API.new(bot, direct: direct, botalias: botalias, botname: botname)
+  unless ai.status.valid
+    if ai.status.error
+      bot.ReplyThread(ai.status.error)
+    end
+    exit(0)
+  end
+  if ai.status.in_progress
+    if direct
+      bot.Say("Ok, I'll forget this conversation")
+    else
+      bot.Say("Ok, I'll forget this conversation and unsubscribe this thread")
+    end
+    ai.reset()
+  else
+    if direct or bot.threaded_message
+      bot.Say("I have no memory of a conversation in progress")
+    else
+      bot.Say("That command doesn't apply in this context")
+    end
+  end
 when "status"
   if bot.threaded_message or direct
-    ai = OpenAI_API.new(bot, "",
-      init_conversation: false,
-      remember_conversation: true,
-      force_thread: false,
-      direct: direct,
-      debug: false
-    )
+    ai = OpenAI_API.new(bot, direct: direct, botalias: botalias, botname: botname)
     if ai.status.valid
-      bot.Reply("I hear you and remember an AI conversation totalling #{ai.status.tokens} tokens")
-    else
-      if ai.status.error
-        bot.Reply(ai.status.error)
+      if ai.status.in_progress
+        bot.Reply("I hear you and remember an AI conversation totalling #{ai.status.tokens} tokens")
       else
         bot.Reply("I hear you, but I have no memory of a conversation in this thread; my short-term is only about half a day - you can start a new AI conversation by addressing me in the main channel")
       end
+    else
+      bot.Reply(ai.status.error)
     end
   else
     bot.Reply("I can hear you")
   end
 when "image"
-  ai = OpenAI_API.new(bot, profile,
-    init_conversation: false,
-    remember_conversation: false,
-    force_thread: true,
-    direct: direct,
-    debug: debug
-  )
+  ai = OpenAI_API.new(bot, direct: direct, botalias: botalias, botname: botname)
   unless ai.valid
     bot.SayThread(ai.error)
     exit(0)
@@ -108,34 +117,4 @@ when "debug"
   end
   bot.Remember(OpenAI_API::ShortTermMemoryDebugPrefix + ":" + bot.thread_id, "true", true)
   bot.SayThread("(ok, debugging output is enabled for this conversation)")
-when "token"
-  rep = bot.PromptUserForReply("SimpleString", "OpenAI token?")
-  unless rep.ret == Robot::Ok
-    bot.SayThread("I had a problem getting your token")
-    exit
-  end
-  token = rep.to_s
-  token_memory = bot.CheckoutDatum(OpenAI_API::TokenMemory, true)
-  if not token_memory.exists
-      token_memory.datum = {}
-  end
-  tokens = token_memory.datum
-  tokens[bot.user] = token
-  bot.UpdateDatum(token_memory)
-  bot.SayThread("Ok, I stored your personal OpenAI token")
-when "rmtoken"
-  token_memory = bot.CheckoutDatum(OpenAI_API::TokenMemory, true)
-  if not token_memory.exists
-      bot.SayThread("I don't see any tokens linked")
-      bot.CheckinDatum(token_memory)
-      exit
-  end
-  tokens = token_memory.datum
-  if tokens[bot.user]
-    tokens.delete(bot.user)
-    bot.UpdateDatum(token_memory)
-    bot.SayThread("Removed")
-    exit
-  end
-  bot.SayThread("I don't see a token for you")
 end

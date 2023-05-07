@@ -96,6 +96,14 @@ class OpenAI_API
     return response.dig("data", 0, "url")
   end
 
+  def reset()
+    # Wipe the memory
+    @bot.Remember(@memory, "", true)
+    if !@direct
+      @bot.Unsubscribe()
+    end
+  end
+
   def query(input)
     input = "#{@bot.user} says: #{input}"
     while true

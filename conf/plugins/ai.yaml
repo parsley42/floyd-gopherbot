@@ -9,11 +9,14 @@ CatchAll: true
 Help:
 - Keywords: [ "ai", "prompt", "query" ]
   Helptext:
-  - "(bot), debug-ai - add debugging output during interactions"
+  # - "(bot), debug-ai - add debugging output during interactions"
   - "(bot), ai-status - in a thread, give conversation status"
+  - "(bot), stop-ai - stop an AI conversation"
 CommandMatchers:
 - Command: 'debug'
   Regex: '(?i:d(ebug[ -]ai)?)'
+- Command: 'close'
+  Regex: '(?i:(?:dismiss|banish|close|stop|deactivate|disengage|dispel|reset)[ -]ai)'
 - Command: 'image'
   Regex: '(?i:(?:draw|paint|image)\s*(.*))'
 - Command: 'status'
