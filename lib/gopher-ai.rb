@@ -150,10 +150,6 @@ class OpenAI_API
       }
     end
     @tokens = usage["total_tokens"]
-    if @tokens > @max_context
-      @bot.Log(:warn, "conversation length (#{current_total}) exceeded max_context (#{@max_context}), dropping an exchange")
-      @exchanges.shift
-    end
     @bot.Remember(@memory, encode_state, true)
     if ENV["GOPHER_PROTOCOL"] == "slack"
       aitext = aitext.gsub(/```\w+\n/) { |language| "#{language[3..-2]}:\n```\n" }
