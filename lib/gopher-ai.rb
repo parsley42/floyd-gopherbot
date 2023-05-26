@@ -115,7 +115,11 @@ class OpenAI_API
         @bot.Say("Chat (lines truncated):\n#{partial}", :fixed)
       end
       parameters[:messages] = messages
-      response = @client.chat(parameters: parameters)
+      begin
+        response = @client.chat(parameters: parameters)
+      rescue => e
+        response = {"error" => {"message" => e.message}}
+      end
       if response["error"]
         message = response["error"]["message"]
         if message.match?(/tokens/i)
