@@ -62,12 +62,12 @@ GoPlugins:
       Value: {{ secret "DUO_SKEY" | printf "%q" }}
 
 ExternalPlugins:
-  "openai-fallback":
-    Path: plugins/go-openai-fallback/ai.go
-    Description: A multi-user AI catchall plugin using OpenAI
+  "ai-fallback":
+    Path: plugins/go-ai-fallback/ai.go
+    Description: A multi-user AI catchall plugin using a chat-completions provider
     Disabled: false
     ParameterSets:
-    - "openai"
+    - "ai"
   "util":
     Description: A convenience plugin for various tasks
     Path: plugins/util.sh
@@ -89,10 +89,10 @@ NameSpaces:
       Value: {{ secret "ROBOT_SSH_PASSPHRASE" | printf "%q" }}
 
 ParameterSets:
-  "openai":
+  "ai":
     Parameters:
-    - Name: OPENAI_KEY
-      Value: {{ printf "sk-%s" (secret "OPENAI_KEY_SUFFIX") | printf "%q" }}
+    - Name: AI_API_KEY
+      Value: {{ secret "GEMINI_API_KEY" | printf "%q" }}
 
 ScheduledJobs:
 - Name: "pause-notifies"

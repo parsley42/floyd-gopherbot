@@ -3,10 +3,12 @@ CatchAllModes:
 - name
 - direct
 Config:
+  ProviderName: "Gemini"
+  APIBaseURL: "https://generativelanguage.googleapis.com/v1beta/openai/"
   Profiles:
     "default":
       "params":
-        "model": "gpt-5.2-chat-latest"
+        "model": "gemini-2.5-flash"
         "temperature": 0.7
       "SystemPrompt":
         "Custom": |
