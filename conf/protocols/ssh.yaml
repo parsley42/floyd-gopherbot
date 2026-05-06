@@ -1,0 +1,21 @@
+ProtocolConfig:
+  ListenHost: localhost
+  DefaultChannel: floyd-jobs
+  Color: true
+  HearSelf: true
+  HostKey: {{ secret "SSH_HOST_KEY" | printf "%q" }}
+  Channels:
+  - ai
+  - mock
+  - random
+  - general
+  - chat
+  - floyd-jobs
+  - botdev
+  - ruby
+  - python
+  UserKeys:
+  - UserName: parsley
+    PublicKeys:
+    - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDLOqrf0eWjEO/kYfjo9I+rnEiQhfU2i0tjmZ0Ju91K6 david@home"
+    - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDWdY4CA1GVkyqeOxOvmop1EA5R37dpnENlIQjyIaY2W david@work"

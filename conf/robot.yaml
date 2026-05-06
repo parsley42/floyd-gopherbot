@@ -1,58 +1,22 @@
-# This is the non-sensitive configuration for Bender, the gopherbot used
-# for development.
+# Floyd custom robot configuration.
 
 LogLevel: {{ env "GOPHER_LOGLEVEL" | default "debug" }}
+LogDest: {{ env "GOPHER_LOGDEST" | default "stdout" }}
 
-# Port to listen on for http/JSON api calls, for external plugins
-#LocalPort: 8888
-## Opening up Floyd to ... all of C'ville Slack
-# IgnoreUnlistedUsers: true
+PrimaryProtocol: {{ env "GOPHER_PROTOCOL" | default "ssh" }}
+DefaultProtocol: {{ env "GOPHER_DEFAULT_PROTOCOL" | default "ssh" }}
+SecondaryProtocols: [ "slack" ]
 
-{{ $proto := env "GOPHER_PROTOCOL" | default "slack" }}
-Protocol: {{ $proto }}
+# Floyd's old Dynamo brain is gone. Keep him ephemeral until a persistent
+# Google-backed brain is configured.
+Brain: {{ env "GOPHER_BRAIN" | default "mem" }}
+HistoryProvider: {{ env "GOPHER_HISTORY_PROVIDER" | default "mem" }}
 
-## Protocol-specific configuration
-{{ printf "%s.yaml" $proto | .Include }}
-
-# Brain configuration; this can all be replaced with static configuration
-# and encrypted secrets for most robots.
-{{ $brain := env "GOPHER_BRAIN" | default "dynamo" }}
-{{ $statedir := env "GOPHER_STATEDIR" | default "state" }}
-{{ $defbraindir := printf "%s/brain" $statedir }}
-Brain: {{ $brain }}
-#EncryptBrain: true # default
-{{ if eq $brain "file" }}
-BrainConfig:
-  BrainDirectory: {{ env "GOPHER_BRAIN_DIRECTORY" | default $defbraindir }}
-  Encode: true
-{{ else if eq $brain "dynamo" }}
-BrainConfig:
-  TableName: floyd-brain
-  Region: "us-east-1"
-{{ end }}
-
-EncryptBrain: true
-
-# Defaults for history and workspace directories, relative to the
-# process working directory.
-{{ $histdir := env "GOPHER_HISTORY_DIRECTORY" | default "history" }}
 {{ $workdir := env "GOPHER_WORKSPACE_DIRECTORY" | default "workspace" }}
 {{ if $workdir -}} WorkSpace: {{ $workdir }} {{- end }}
 
-## Configure a history provider
-{{ $history := env "GOPHER_HISTORY_PROVIDER" | default "file" }}
-HistoryProvider: {{ $history }}
-
-{{ if eq $history "file" }}
-HistoryConfig:
-  Directory: {{ $histdir }}
-  #URLPrefix: 'http://localhost:9000'
-{{ end }}
-## End history config
-
-# The administrator of this robot, can be retrieved in plugins with
-# GetBotAttribute("admin")
 AdminContact: "David Parsley, <parsley@linuxjedi.org>"
+AdminUsers: [ "parse", "parsley", "meekohi" ]
 
 BotInfo:
   UserName: floyd
@@ -61,137 +25,85 @@ BotInfo:
   FirstName: Floyd
   LastName: Gopherbot
 
-# If a plugin doesn't specify otherwise it will be active in these channels;
-# defaults to all channels
-DefaultChannels: [ "floyd-jobs", "ai" ]
+UserRoster:
+- UserName: floyd
+  BotUser: true
+- UserName: clu
+  BotUser: true
+- UserName: github
+  BotUser: true
+- UserName: parse
+  Email: parsley@linuxjedi.org
+  FullName: David Parsley
+  FirstName: David
+  LastName: Parsley
+- UserName: parsley
+  Email: parsley@linuxjedi.org
+  FullName: David Parsley
+  FirstName: David
+  LastName: Parsley
+- UserName: meekohi
+- UserName: alice
 
-# One-character alias the bot can be called by. Note: not all single characters
-# are supported. If your robot doesn't respond to e.g. ";ping", try changing
-# the Alias to something other than ";". Popular alternatives: ":", "!", "*".
+DefaultChannels: [ "floyd-jobs", "ai" ]
+DefaultJobChannel: {{ variable "DEFAULT_JOB_CHANNEL" | printf "%q" }}
+DefaultMessageFormat: Raw
+TimeZone: "America/New_York"
 Alias: ";"
 
 GoPlugins:
   "duo":
     Parameters:
     - Name: HOST
-      Value: {{ decrypt "Iye0dd+1i324dSn9v+beKHX/oXFNI6evORRq+Le8GhqYptpwK84OtorO53fnO33gIrPmIQw2Yjo=" }}
+      Value: {{ secret "DUO_HOST" | printf "%q" }}
     - Name: IKEY
-      Value: {{ decrypt "MgPRFDAx7nV88eJ5GqamylWgrlh2RfX+x2EtjdIV/mEHl7aSZd/5ciBFpWarv2Qi" }}
+      Value: {{ secret "DUO_IKEY" | printf "%q" }}
     - Name: SKEY
-      Value: {{ decrypt "R+0uA2oUUtDUUHx5++eM0CWAm+czESZ5E/dL/d2fPFSi7jcwnablyLK905TIg025ex9YLoUVuIWfqUSGKxBtwD1fzQg=" }}
+      Value: {{ secret "DUO_SKEY" | printf "%q" }}
 
-# List of external plugins/jobs to configure; generally scripts using a gopherbot
-# script library. The robot will look for plugins in the installation directory
-# first, then the local config directory.
 ExternalPlugins:
-  # "weather":
-  #   Path: plugins/weather.rb
-  #   Description: A plugin using OpenWeatherMap to give the weather
-  #   Parameters:
-  #   - Name: TEMP_UNITS
-  #     Value: imperial # or 'metric'
-  #   - Name: DEFAULT_COUNTRY
-  #     Value: 'us' # or other ISO 3166 country code
-  "ai":
-    Path: plugins/ai.rb
-    Description: A plugin wrapping the OpenAI completions API
+  "openai-fallback":
+    Path: plugins/go-openai-fallback/ai.go
+    Description: A multi-user AI catchall plugin using OpenAI
+    Disabled: false
     ParameterSets:
     - "openai"
   "util":
     Description: A convenience plugin for various tasks
     Path: plugins/util.sh
-  # "pythondemo":
-  #   Path: plugins/samples/pythondemo.py
+
 ExternalJobs:
-  # "cloud9wks":
-  #   Description: Job to launch a Cloud9 Instance
-  #   Path: jobs/c9wks.sh
-  #   Parameters:
-  #   - Name: AWS_REGION
-  #     Value: us-east-1
   "backup":
     Disabled: true
   "restore":
     Disabled: true
-  # "bender":
-  #   Description: Job to launch a spot instance for Bender and configure it
-  #   Path: jobs/bender.sh
-  #   Parameters:
-  #   - Name: AWS_REGION
-  #     Value: us-east-1
-  # "cloud9f28":
-  #   Description: Job to launch a Fedora 28 Cloud9 Instance
-  #   Path: jobs/c9wks.sh
-  #   Parameters:
-  #   - Name: DEVHOST
-  #     Value: f28devel
-  #   - Name: DEVIMG
-  #     Value: f28devel
-  #   - Name: AWS_REGION
-  #     Value: us-east-1
+
 ExternalTasks:
-# Floyd job tasks
-  # "build-c9wks":
-  #   Description: Task that launches and configures the Cloud9 instance
-  #   Path: tasks/build-c9wks.sh
-  #   Parameters:
-  #   - Name: KEYNAME
-  #     Value: floyd
-  # "wake-bender":
-  #   Description: Task that launches and configures the instance for Bender
-  #   Path: tasks/wake-bender.sh
-  #   Parameters:
-  #   - Name: KEYNAME
-  #     Value: floyd
-# /Floyd job tasks
+
 NameSpaces:
   "ssh":
     Parameters:
     - Name: KEYNAME
       Value: "robot_rsa"
     - Name: BOT_SSH_PHRASE
-      Value: {{ decrypt "kB8L7FJuQi4ovUKX09CITRr1ij2NCSg+vBUyC1+ER4DVRHg3Z2+S28qjzCdk9OOR7Al6IA/PnoI=" }}
+      Value: {{ secret "ROBOT_SSH_PASSPHRASE" | printf "%q" }}
+
 ParameterSets:
   "openai":
     Parameters:
     - Name: OPENAI_KEY
-      Value: sk-{{ decrypt "DmGoLUPF1jye+UxO+kHaO2yrO8gzwROWiHJSApcrZw0o35lDkiQFUO4qYrjFQhUoJCADJCAQz0yP6WP93WpZY8BjibkTYty+7nh9/A==" }}
-# If a job doesn't specify otherwise, this is the channel where it runs
-DefaultJobChannel: floyd-jobs
+      Value: {{ printf "sk-%s" (secret "OPENAI_KEY_SUFFIX") | printf "%q" }}
 
-# Timezone for scheduled jobs
-TimeZone: "America/New_York"
-# Job scheduling with github.com/robfig/cron
 ScheduledJobs:
 - Name: "pause-notifies"
   Schedule: "0 0 8 * * *"
 - Name: install-libs
   Schedule: "@init"
-# - Name: hello
-#   Schedule: "@every 5m" # see: https://godoc.org/github.com/robfig/cron
-#   Arguments: # an array of strings; up to the job to parse numbers & bools
-#   - "Hello, World !!!"
-# - Job: hello
-#   Schedule: "0 */5 * * * *"
-
-DefaultMessageFormat: Raw
-# Users the bot should never listen to
-#IgnoreUsers: [ "otherbot", "slackbot" ]
-
-# The robot's email address (used in From:)
-#Email: robbie@robot.com
-# Configuration for sending out email. For Authtype: none, User and Password
-# can be left out. Note that sending email will fail if Email isn't set.
-#MailConfig:
-#  Mailhost: <somehost:port>
-#  Authtype: <plain|none>
-#  User: <authuser>
-#  Password: <password>
 
 MailConfig:
   Mailhost: smtp.gmail.com:587
   Authtype: plain
   User: floyd@linuxjedi.org
-  Password: {{ decrypt "vezuay3EVKr//JaD8bx/Hp0ZXk2rCuoS2c4Ms4PossteRMCu5omrUY1gpJY=" }}
+  Password: {{ secret "MAIL_PASSWORD" | printf "%q" }}
 
 DefaultElevator: duo

@@ -16,9 +16,9 @@ github.com/lnxjedi/gopherbot:
   - Name: NOTIFY_USER
     Value: parsley
   - Name: DOCKER_TRIGGER
-    Value: {{ decrypt "Nm00gWLxjPB7LIjWFwrs5o1x3E8dLON5z5xeVijIyiujVuGdhSPM+rR5Spj6ZVVdhJxUhsEyrkiz3vvMYxH+Laum8B41FAXFLxwdC5kYaNSNcOZU4vtFth8bQbPv6Zjewt/Dzk+e6bnOVZDEBMCLD2j/IJL2MBjc10JhnrwyEVboYvcQkfb8" }}
+    Value: {{ secret "DOCKER_TRIGGER" | printf "%q" }}
   - Name: GITHUB_RELEASE_ACCESS_TOKEN
-    Value: {{ decrypt "99Ry93Jihlvhj8lfPXzseJArXd+8kpMrcaLzJAY0mgKvV85tYetqCWSBsllZkqF9VyVt92lKdGF8Fm7l7wU4folAnm4=" }}
+    Value: {{ secret "GITHUB_RELEASE_ACCESS_TOKEN" | printf "%q" }}
 github.com/parsley42/gopherbot:
   #Type: localbuild
   Type: none

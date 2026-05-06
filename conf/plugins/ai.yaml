@@ -6,23 +6,32 @@
 AllowDirect: true
 AllChannels: true
 CatchAll: true
-Help:
-- Keywords: [ "ai", "prompt", "query" ]
-  Helptext:
-  # - "(bot), debug-ai - add debugging output during interactions"
-  - "(bot), ai-status - in a thread, give conversation status"
-  - "(bot), stop-ai - stop an AI conversation"
-CommandMatchers:
+Commands:
 - Command: 'debug'
   Regex: '(?i:d(ebug[ -]ai)?)'
+  Usage: "debug-ai"
+  Summary: "add debugging output during AI interactions"
+  Keywords: [ "ai", "debug" ]
 - Command: 'close'
   Regex: '(?i:(?:dismiss|banish|close|stop|deactivate|disengage|dispel|reset)[ -]ai)'
+  Usage: "stop-ai"
+  Summary: "stop an AI conversation"
+  Keywords: [ "ai", "stop", "close" ]
 - Command: 'image'
   Regex: '(?i:(?:draw|paint|image)\s*(.*))'
+  Usage: "draw <prompt>"
+  Summary: "ask the AI to create an image"
+  Keywords: [ "ai", "image", "draw" ]
 - Command: 'status'
   Regex: '^\?$'
+  Usage: "?"
+  Summary: "show AI conversation status in a thread"
+  Keywords: [ "ai", "status" ]
 - Command: 'status'
   Regex: '(?i:ai[ -]status)'
+  Usage: "ai-status"
+  Summary: "show AI conversation status in a thread"
+  Keywords: [ "ai", "status" ]
 Config:
 ## Generated with help from an earlier version of the plugin
   WaitMessages:

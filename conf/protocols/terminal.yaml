@@ -1,0 +1,25 @@
+ProtocolConfig:
+  EOF: ";quit"
+  Abort: ";abort"
+  HearSelf: true
+  GenerateNewlines: true
+  StartChannel: floyd-jobs
+  StartUser: parse
+  Channels:
+  - ai
+  - mock
+  - random
+  - general
+  - chat
+  - floyd-jobs
+  - botdev
+  - ruby
+  - python
+  AppendUsers:
+  - Name: "parse"
+    Email: "parsley@linuxjedi.org"
+    InternalID: "u0007"
+    FullName: "David Parsley"
+    FirstName: "David"
+    LastName: "Parsley"
+    Phone: "(555)765-0007"

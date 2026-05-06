@@ -10,14 +10,17 @@ shift
 configure(){
   cat <<"EOF"
 AllowDirect: true
-Help:
-- Keywords: [ "dinner" ]
-  Helptext: [ "(bot), dinner? - pick random dinner meals" ]
-CommandMatchers:
+Commands:
 - Command: "dinner"
   Regex: "(?i:(what's for )?dinner\\??)"
+  Usage: "dinner?"
+  Summary: "pick random dinner meals"
+  Keywords: [ "dinner" ]
 - Command: "moredinner"
   Regex: "more dinner please"
+  Usage: "more dinner please"
+  Summary: "pick another dinner meal"
+  Keywords: [ "dinner" ]
 EOF
 }
 

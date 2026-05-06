@@ -1,0 +1,10 @@
+ProtocolConfig:
+  ## C'ville Slack
+  AppToken: {{ printf "xapp-1-%s" (secret "SLACK_APP_TOKEN_SUFFIX") | printf "%q" }}
+  BotToken: {{ printf "xoxb-%s" (secret "SLACK_BOT_TOKEN_SUFFIX") | printf "%q" }}
+  MaxMessageSplit: 2
+  HearSelf: true
+  UserMap:
+    floyd: U0533UX66LT
+    parse: U0ECQ0W76
+    meekohi: U0D6TFPPZ
