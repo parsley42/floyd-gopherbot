@@ -101,3 +101,5 @@ ParameterSets:
 ScheduledJobs:
 - Name: "pause-notifies"
   Schedule: "0 0 8 * * *"
+- Name: "go-ai-prune"
+  Schedule: "0 15 3 * * *"
