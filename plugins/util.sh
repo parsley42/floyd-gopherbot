@@ -28,7 +28,7 @@ case "$COMMAND" in
   "init")
     if [ ! -e ".wokeup" ]
     then
-      SendChannelMessage "ai" "Floyd here now!"
+      SendChannelMessage "general" "Floyd here now!"
       touch ".wokeup"
     fi
     ;;
