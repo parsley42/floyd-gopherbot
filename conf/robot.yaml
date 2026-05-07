@@ -9,7 +9,7 @@ SecondaryProtocols: [ "slack", "googlechat" ]
 
 # Floyd's old Dynamo brain is gone. Keep him ephemeral until a persistent
 # Google-backed brain is configured.
-Brain: {{ env "GOPHER_BRAIN" | default "mem" }}
+Brain: {{ env "GOPHER_BRAIN" | default "firestore" }}
 HistoryProvider: {{ env "GOPHER_HISTORY_PROVIDER" | default "mem" }}
 
 {{ $workdir := env "GOPHER_WORKSPACE_DIRECTORY" | default "workspace" }}
