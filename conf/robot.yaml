@@ -16,7 +16,7 @@ HistoryProvider: {{ env "GOPHER_HISTORY_PROVIDER" | default "mem" }}
 {{ if $workdir -}} WorkSpace: {{ $workdir }} {{- end }}
 
 AdminContact: "David Parsley, <parsley@linuxjedi.org>"
-AdminUsers: [ "parse", "parsley", "meekohi" ]
+AdminUsers: [ "parsley" ]
 
 BotInfo:
   UserName: floyd
@@ -32,17 +32,11 @@ UserRoster:
   BotUser: true
 - UserName: github
   BotUser: true
-- UserName: parse
-  Email: parsley@linuxjedi.org
-  FullName: David Parsley
-  FirstName: David
-  LastName: Parsley
 - UserName: parsley
   Email: parsley@linuxjedi.org
   FullName: David Parsley
   FirstName: David
   LastName: Parsley
-- UserName: meekohi
 - UserName: alice
 
 DefaultChannels: [ "floyd-jobs", "ai" ]
