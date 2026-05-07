@@ -1,0 +1,6 @@
+BrainConfig:
+  ProjectID: "floyd-chatapi"
+  DatabaseID: "(default)"
+  Collection: "gopherbot-brain"
+  CredentialsEncryptedFile: "gopherbot-key.json.enc"
+  OperationTimeoutSeconds: 15

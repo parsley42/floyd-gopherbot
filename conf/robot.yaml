@@ -1,11 +1,11 @@
 # Floyd custom robot configuration.
 
-LogLevel: {{ env "GOPHER_LOGLEVEL" | default "debug" }}
+LogLevel: {{ env "GOPHER_LOGLEVEL" | default "info" }}
 LogDest: {{ env "GOPHER_LOGDEST" | default "stdout" }}
 
 PrimaryProtocol: {{ env "GOPHER_PROTOCOL" | default "ssh" }}
 DefaultProtocol: {{ env "GOPHER_DEFAULT_PROTOCOL" | default "ssh" }}
-SecondaryProtocols: [ "slack" ]
+SecondaryProtocols: [ "slack", "googlechat" ]
 
 # Floyd's old Dynamo brain is gone. Keep him ephemeral until a persistent
 # Google-backed brain is configured.
@@ -39,9 +39,9 @@ UserRoster:
   LastName: Parsley
 - UserName: alice
 
-DefaultChannels: [ "floyd-jobs", "ai" ]
+DefaultChannels: [ "floyd-jobs", "general", "random" ]
 DefaultJobChannel: {{ variable "DEFAULT_JOB_CHANNEL" | printf "%q" }}
-DefaultMessageFormat: Raw
+DefaultMessageFormat: BasicMarkdown
 TimeZone: "America/New_York"
 Alias: ";"
 
