@@ -101,13 +101,3 @@ ParameterSets:
 ScheduledJobs:
 - Name: "pause-notifies"
   Schedule: "0 0 8 * * *"
-- Name: install-libs
-  Schedule: "@init"
-
-MailConfig:
-  Mailhost: smtp.gmail.com:587
-  Authtype: plain
-  User: floyd@linuxjedi.org
-  Password: {{ secret "MAIL_PASSWORD" | printf "%q" }}
-
-DefaultElevator: duo
