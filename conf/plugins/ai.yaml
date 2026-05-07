@@ -3,6 +3,7 @@
 ## config taking precedence. Arrays can be overwritten, or appended
 ## by defining e.g. AppendWaitMessages: [ ... ]
 ## ... and remember, yamllint is your friend.
+Disabled: true
 AllowDirect: true
 AllChannels: true
 CatchAll: true

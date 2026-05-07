@@ -62,6 +62,10 @@ GoPlugins:
       Value: {{ secret "DUO_SKEY" | printf "%q" }}
 
 ExternalPlugins:
+  "ai":
+    Path: plugins/ai.rb
+    Description: Disabled legacy Ruby AI plugin; use ai-fallback instead
+    Disabled: true
   "ai-fallback":
     Path: plugins/go-ai-fallback/ai.go
     Description: A multi-user AI catchall plugin using a chat-completions provider
