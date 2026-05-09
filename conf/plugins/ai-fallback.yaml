@@ -3,6 +3,7 @@ CatchAllModes:
 - name
 - direct
 Config:
+  MultipartContinueNotice: ""
   ProviderName: "Gemini"
   APIBaseURL: "https://generativelanguage.googleapis.com/v1beta/openai/"
   Profiles:
