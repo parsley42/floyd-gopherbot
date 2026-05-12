@@ -1,6 +1,5 @@
 ---
 RequireAdmin: true
-AllowDirect: true
 KeepLogs: 7
 Quiet: true # The reload plugin provides feedback
 Triggers:
