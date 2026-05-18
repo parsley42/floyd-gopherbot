@@ -158,12 +158,27 @@ gcloud compute ssh "${BOT_NAME}-robot" \
   --tunnel-through-iap
 ```
 
+## Upgrade by resetting the instance
+
+Because bootstrap replaces `/opt/gopherbot` on boot, you can trigger a reinstall or upgrade by resetting the VM:
+
+```bash
+gcloud compute instances reset floyd-robot --zone=us-central1-a
+```
+
+Behavior notes:
+
+- If `gopherbot_version = "latest"`, reset pulls the newest published release.
+- If `gopherbot_version` is pinned (for example `v2.9.0`), reset reinstalls that pinned version.
+- Robot runtime state and `.env` remain under `/var/lib/robots/<bot_name>` and are not wiped by this step.
+
 ## Notes
 
 - Free-tier eligibility depends on region, machine type, and account limits.
 - The startup script installs Gopherbot from GitHub release tarballs.
 - Set gopherbot_version to a release tag (for example v2.9.0) to pin version.
 - robot_env_secret_name should contain the full .env content expected by your robot.
+- gopherbot_nobody = true installs the binary setuid/setgid nobody and starts the service through `setpriv --clear-groups --reuid=<bot_name> --regid=<bot_name>`. This keeps the parent running as the robot user while preventing unprivileged children from retaining the robot user's supplementary groups.
 - enable_firewall = true configures host iptables to default-deny WireGuard and require explicit ALLOW_VPN entries.
 - enable_ssh_ingress = false means no inbound tcp/22 rule is created in GCP.
 
