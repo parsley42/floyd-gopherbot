@@ -1,126 +1,182 @@
 #!/bin/bash
+set -euo pipefail
 
-# bootstrap.sh - Turn an Amazon Linux 2023 instance in to a Gopherbot host
-echo "Running $0 ..."
+exec > >(tee -a /var/log/gopherbot-bootstrap.log) 2>&1
 
-# Uses precious RAM, not useful
-echo "Disabling sssd (unused) ..."
-systemctl stop sssd
-systemctl disable sssd
+echo "Starting Gopherbot bootstrap"
 
-echo "Setting up swap file (${swap_file_size}) ..."
-# Create a swap file
-fallocate -l ${swap_file_size} /swapfile
-chmod 600 /swapfile
-mkswap /swapfile
+BOT_NAME="${bot_name}"
+BOT_HOME="${bot_home}"
+PROJECT_ID="${project_id}"
+ROBOT_ENV_SECRET_NAME="${robot_env_secret_name}"
+WIREGUARD_SECRET_NAME="${wireguard_secret_name}"
+ENABLE_VPN="${enable_vpn}"
+WIREGUARD_PORT="${wireguard_port}"
+VPN_CIDR="${vpn_cidr}"
+ENABLE_FIREWALL="${enable_firewall}"
 
-# Enable the swap file across reboots
-echo '/swapfile swap swap defaults 0 0' | tee -a /etc/fstab > /dev/null
-swapon -a
+apt-get update
+DEBIAN_FRONTEND=noninteractive apt-get install -y \
+  ca-certificates \
+  curl \
+  git \
+  iptables \
+  jq \
+  python3-pip \
+  ruby-full \
+  wireguard
 
-yum -y upgrade
-yum -y install jq git ruby python3-pip iptables
+get_access_token() {
+  curl -fsS -H "Metadata-Flavor: Google" \
+    "http://169.254.169.254/computeMetadata/v1/instance/service-accounts/default/token" \
+    | jq -r '.access_token'
+}
 
-echo "Getting secrets from SSM"
-GOPHER_ENCRYPTION_KEY=$(aws ssm get-parameter --name "/robots/${bot_name}/encryption_key" --with-decryption --output text --query Parameter.Value)
-GOPHER_DEPLOY_KEY=$(aws ssm get-parameter --name "/robots/${bot_name}/deploy_key" --with-decryption --output text --query Parameter.Value)
-WG_PRIVATE=$(aws ssm get-parameter --name "/robots/${bot_name}/wg_key" --with-decryption --output text --query Parameter.Value)
+read_secret_value() {
+  local secret_name="$1"
+  local token
+  token="$(get_access_token)"
 
-echo "Installing WireGuard Tools"
-# Install WireGuard tools from Rocky Linux; kernel module already present
-ROCKY_LINUX_PREFIX="https://download.rockylinux.org/pub/rocky/9/devel/x86_64/os/Packages/w"
-WG_RPM_VERSION=$(curl -s $ROCKY_LINUX_PREFIX/ | grep -oP '(?<=href="wireguard-tools).*(?=">)')
-rpm --import https://dl.rockylinux.org/pub/rocky/RPM-GPG-KEY-Rocky-9
-rpm -i $ROCKY_LINUX_PREFIX/wireguard-tools$WG_RPM_VERSION
-systemctl enable wg-quick@wg0.service
+  curl -fsS \
+    -H "Authorization: Bearer $${token}" \
+    "https://secretmanager.googleapis.com/v1/projects/$${PROJECT_ID}/secrets/$${secret_name}/versions/latest:access" \
+    | jq -r '.payload.data' \
+    | tr '_-' '/+' \
+    | base64 --decode
+}
 
-echo "Configuring WireGuard"
-cat > /etc/wireguard/wg0.conf << EOF
+echo "Reading robot .env from Secret Manager secret: $${ROBOT_ENV_SECRET_NAME}"
+ROBOT_ENV_CONTENT="$(read_secret_value "$${ROBOT_ENV_SECRET_NAME}")"
+
+if [[ -z "$${ROBOT_ENV_CONTENT}" ]]; then
+  echo "Secret $${ROBOT_ENV_SECRET_NAME} returned empty content" >&2
+  exit 1
+fi
+
+echo "Installing Gopherbot"
+GBDL="/root/gopherbot.tar.gz"
+if [[ "${gopherbot_version}" == "latest" ]]; then
+  GB_VERSION="$(curl -fsS https://api.github.com/repos/lnxjedi/gopherbot/releases/latest | jq -r .tag_name)"
+else
+  GB_VERSION="${gopherbot_version}"
+fi
+
+curl -fsSL -o "$${GBDL}" "https://github.com/lnxjedi/gopherbot/releases/download/$${GB_VERSION}/gopherbot-linux-amd64.tar.gz"
+mkdir -p /opt
+cd /opt
+tar xzf "$${GBDL}"
+rm -f "$${GBDL}"
+
+if [[ "${gopherbot_nobody}" == "true" ]]; then
+  /opt/gopherbot/setuid-nobody.sh
+  iptables -A OUTPUT -m owner --uid-owner nobody -d 169.254.169.254 -j DROP
+fi
+
+if [[ "$${ENABLE_VPN}" == "true" ]]; then
+  if [[ -z "$${WIREGUARD_SECRET_NAME}" ]]; then
+    echo "WireGuard is enabled but wireguard_private_key_secret_name is empty" >&2
+    exit 1
+  fi
+
+  echo "Configuring WireGuard"
+  WG_PRIVATE="$(read_secret_value "$${WIREGUARD_SECRET_NAME}")"
+
+  cat > /etc/wireguard/wg0.conf <<EOF
 [Interface]
-Address = ${vpn_cidr}
-PrivateKey = $WG_PRIVATE
-ListenPort = 51820
+Address = $${VPN_CIDR}
+PrivateKey = $${WG_PRIVATE}
+ListenPort = $${WIREGUARD_PORT}
 PostUp = /etc/wireguard/start-nat.sh
 PostDown = /etc/wireguard/stop-nat.sh
 EOF
 
-cat > /etc/wireguard/start-nat.sh << 'EOF'
+  cat > /etc/wireguard/start-nat.sh <<EOF
 #!/bin/bash
+set -euo pipefail
 echo 1 > /proc/sys/net/ipv4/ip_forward
-ETHERNET_INT=$(ip -brief link show | awk '$1 ~ /^e/ {print $1; exit}')
-/sbin/iptables -t nat -I POSTROUTING 1 -s ${vpn_cidr} -o $ETHERNET_INT -j MASQUERADE
-/sbin/iptables -I INPUT 1 -i wg0 -j ACCEPT
-/sbin/iptables -I FORWARD 1 -i $ETHERNET_INT -o wg0 -j ACCEPT
-/sbin/iptables -I FORWARD 1 -i wg0 -o $ETHERNET_INT -j ACCEPT
-/sbin/iptables -I INPUT 1 -i $ETHERNET_INT -p udp --dport 51820 -j ACCEPT
+ETHERNET_INT=\$(ip route | awk '/default/ {print \$5; exit}')
+
+iptables -N ALLOW_VPN 2>/dev/null || true
+iptables -F ALLOW_VPN
+
+iptables -t nat -I POSTROUTING 1 -s $${VPN_CIDR} -o \$${ETHERNET_INT} -j MASQUERADE
+iptables -I INPUT 1 -i wg0 -j ACCEPT
+iptables -I FORWARD 1 -i \$${ETHERNET_INT} -o wg0 -j ACCEPT
+iptables -I FORWARD 1 -i wg0 -o \$${ETHERNET_INT} -j ACCEPT
 EOF
 
-cat > /etc/wireguard/stop-nat.sh << 'EOF'
+  cat > /etc/wireguard/stop-nat.sh <<EOF
 #!/bin/bash
+set -euo pipefail
 echo 0 > /proc/sys/net/ipv4/ip_forward
-ETHERNET_INT=$(ip -brief link show | awk '$1 ~ /^e/ {print $1; exit}')
-/sbin/iptables -t nat -D POSTROUTING -s ${vpn_cidr} -o $ETHERNET_INT -j MASQUERADE
-/sbin/iptables -D INPUT -i wg0 -j ACCEPT
-/sbin/iptables -D FORWARD -i $ETHERNET_INT -o wg0 -j ACCEPT
-/sbin/iptables -D FORWARD -i wg0 -o $ETHERNET_INT -j ACCEPT
-/sbin/iptables -D INPUT -i $ETHERNET_INT -p udp --dport 51820 -j ACCEPT
+ETHERNET_INT=\$(ip route | awk '/default/ {print \$5; exit}')
+
+iptables -t nat -D POSTROUTING -s $${VPN_CIDR} -o \$${ETHERNET_INT} -j MASQUERADE
+iptables -D INPUT -i wg0 -j ACCEPT
+iptables -D FORWARD -i \$${ETHERNET_INT} -o wg0 -j ACCEPT
+iptables -D FORWARD -i wg0 -o \$${ETHERNET_INT} -j ACCEPT
 EOF
 
-chmod +x /etc/wireguard/*-nat.sh
+  if [[ "$${ENABLE_FIREWALL}" == "true" ]]; then
+    cat >> /etc/wireguard/start-nat.sh <<EOF
+iptables -I INPUT 1 -i \$${ETHERNET_INT} -p udp --dport $${WIREGUARD_PORT} -j DROP
+iptables -I INPUT 1 -i \$${ETHERNET_INT} -p udp --dport $${WIREGUARD_PORT} -j ALLOW_VPN
+EOF
 
-systemctl start wg-quick@wg0
+    cat >> /etc/wireguard/stop-nat.sh <<EOF
+iptables -D INPUT -i \$${ETHERNET_INT} -p udp --dport $${WIREGUARD_PORT} -j ALLOW_VPN || true
+iptables -D INPUT -i \$${ETHERNET_INT} -p udp --dport $${WIREGUARD_PORT} -j DROP || true
+iptables -F ALLOW_VPN || true
+iptables -X ALLOW_VPN || true
+EOF
+  fi
 
-# Install latest Gopherbot
-echo "Installing Gopherbot ..."
-GBDL=/root/gopherbot.tar.gz
-GB_LATEST=$(curl --silent https://api.github.com/repos/lnxjedi/gopherbot/releases/latest | jq -r .tag_name)
-curl -s -L -o $GBDL https://github.com/lnxjedi/gopherbot/releases/download/$GB_LATEST/gopherbot-linux-amd64.tar.gz
-cd /opt
-tar xzf $GBDL
-rm $GBDL
+  chmod +x /etc/wireguard/start-nat.sh /etc/wireguard/stop-nat.sh
+  systemctl enable wg-quick@wg0
+  systemctl start wg-quick@wg0
+fi
 
 mkdir -p /var/lib/robots
-useradd -d /var/lib/robots/${bot_name} -r -m -c "${bot_name} gopherbot" ${bot_name}
-cat > /var/lib/robots/${bot_name}/.env << EOF
-GOPHER_CUSTOM_REPOSITORY=${bot_repo}
-GOPHER_DEPLOY_KEY=$GOPHER_DEPLOY_KEY
-GOPHER_ENCRYPTION_KEY=$GOPHER_ENCRYPTION_KEY
-GOPHER_PROTOCOL=${protocol}
+if ! id -u "$${BOT_NAME}" >/dev/null 2>&1; then
+  useradd -d "$${BOT_HOME}" -r -m -c "$${BOT_NAME} gopherbot" "$${BOT_NAME}"
+fi
+
+mkdir -p "$${BOT_HOME}"
+printf '%s\n' "$${ROBOT_ENV_CONTENT}" > "$${BOT_HOME}/.env"
+
+chown -R "$${BOT_NAME}:$${BOT_NAME}" "$${BOT_HOME}"
+chmod 0600 "$${BOT_HOME}/.env"
+
+cat > "/etc/sudoers.d/$${BOT_NAME}-user" <<EOF
+# User rules for robot
+$${BOT_NAME} ALL=(ALL) NOPASSWD:ALL
 EOF
-chown ${bot_name}:${bot_name} /var/lib/robots/${bot_name}/.env
-chmod 0600 /var/lib/robots/${bot_name}/.env
-cat > /etc/systemd/system/${bot_name}.service <<EOF
+chmod 0440 "/etc/sudoers.d/$${BOT_NAME}-user"
+
+cat > "/etc/systemd/system/$${BOT_NAME}.service" <<EOF
 [Unit]
-Description=${bot_name} - Gopherbot DevOps Chatbot
+Description=$${BOT_NAME} - Gopherbot DevOps Chatbot
 Documentation=https://lnxjedi.github.io/gopherbot
 After=syslog.target
 After=network.target
 
 [Service]
 Type=simple
-User=${bot_name}
-Group=${bot_name}
-WorkingDirectory=/var/lib/robots/${bot_name}
+User=$${BOT_NAME}
+Group=$${BOT_NAME}
+WorkingDirectory=$${BOT_HOME}
 ExecStart=/opt/gopherbot/gopherbot -plainlog
 Restart=on-failure
 Environment=HOSTNAME=%H
-
 KillMode=process
-## Give the robot plenty of time to finish plugins currently executing;
-## no new plugins will start after SIGTERM is caught.
-TimeoutStopSec=600
+TimeoutStopSec=${systemd_timeout_stop_sec}
 
 [Install]
 WantedBy=default.target
 EOF
 
-cat > /etc/sudoers.d/${bot_name}-user << EOF
-# User rules for robot
-${bot_name} ALL=(ALL) NOPASSWD:ALL
-EOF
-
 systemctl daemon-reload
-systemctl enable ${bot_name}
+systemctl enable "$${BOT_NAME}"
+systemctl start "$${BOT_NAME}"
 
-echo "Starting the robot (${bot_name}) ..."
-systemctl start ${bot_name}
+echo "Bootstrap complete"

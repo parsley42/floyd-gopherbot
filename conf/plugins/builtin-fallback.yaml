@@ -1,5 +1,6 @@
 ---
-# Deterministic fallback handles alias-addressed command mistakes.
+# Deterministic fallback handles alias-addressed and hidden command mistakes.
 # Name-addressed and direct unmatched requests are handled by ai-fallback.
 CatchAllModes:
 - alias
+- hidden

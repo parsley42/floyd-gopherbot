@@ -1,47 +1,50 @@
-data "aws_vpc" "bot-vpc" {
-  filter {
-    name = "tag-value"
-    values = ["${var.vpc-name}"]
-  }
-  filter {
-    name = "tag-key"
-    values = ["Name"]
-  }
+resource "google_compute_network" "bot" {
+  project                 = var.project_id
+  name                    = var.network_name
+  auto_create_subnetworks = false
 }
 
-data "aws_subnets" "bot-subnets" {
-  filter {
-    name   = "vpc-id"
-    values = [data.aws_vpc.bot-vpc.id]
-  }
-    filter {
-    name   = "tag:Name"
-    values = ["Management DMZ Subnet*"]
-  }
+resource "google_compute_subnetwork" "bot" {
+  project       = var.project_id
+  name          = var.subnetwork_name
+  region        = var.region
+  network       = google_compute_network.bot.id
+  ip_cidr_range = var.subnetwork_cidr
 }
 
-resource "aws_security_group" "bot-sg" {
-  name        = "${var.robot-name}-allow-wireguard"
-  description = "Allows the robot to provide WireGuard VPN server services"
-  vpc_id      = data.aws_vpc.bot-vpc.id
+resource "google_compute_firewall" "ssh" {
+  count   = var.enable_ssh_ingress ? 1 : 0
+  project = var.project_id
+  name    = "${var.bot_name}-allow-ssh"
+  network = google_compute_network.bot.name
 
-  ingress {
-    description      = "WireGuard UDP"
-    from_port        = 51820
-    to_port          = 51820
-    protocol         = "udp"
-    cidr_blocks      = ["0.0.0.0/0"]
+  allow {
+    protocol = "tcp"
+    ports    = ["22"]
   }
 
-  egress {
-    from_port        = 0
-    to_port          = 0
-    protocol         = "-1"
-    cidr_blocks      = ["0.0.0.0/0"]
-    ipv6_cidr_blocks = ["::/0"]
+  source_ranges = var.allow_ssh_cidrs
+  target_tags   = ["gopherbot"]
+}
+
+resource "google_compute_firewall" "wireguard" {
+  count   = var.enable_vpn ? 1 : 0
+  project = var.project_id
+  name    = "${var.bot_name}-allow-wireguard"
+  network = google_compute_network.bot.name
+
+  allow {
+    protocol = "udp"
+    ports    = [tostring(var.wireguard_port)]
   }
 
-  tags = {
-    Name = "allow_wireguard"
-  }
+  source_ranges = ["0.0.0.0/0"]
+  target_tags   = ["wireguard"]
+}
+
+resource "google_compute_address" "bot" {
+  count   = var.create_static_ip ? 1 : 0
+  project = var.project_id
+  name    = "${var.bot_name}-ip"
+  region  = var.region
 }
