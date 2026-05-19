@@ -1,0 +1,16 @@
+---
+Disabled: false
+Config:
+  Groups:
+    VPNUsers:
+      Users:
+      - david
+      - josh
+      - jon
+      - jeff
+      - kate
+      - sofia
+      - robert
+      - jeremy
+      - carter
+      - corbin

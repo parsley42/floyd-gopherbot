@@ -1,0 +1,40 @@
+---
+AllowDirect: true
+Help:
+- Keywords: [ "wireguard", "vpn" ]
+  Helptext:
+  - /(bot), add-device <device name> <public key> - configure new vpn connection for your device
+  - (bot), allow-ip <ip address> - open a hole in the firewall for the given address
+  - (bot), list-vpn-devices - list all user's current devices
+  - /(bot), get-vpn <device> - retrieves the information needed for 'Wg.Setup.py'
+  - (bot), delete-device <device> - deletes the user's device
+  - (bot), list-vpn-users - list all configured vpn users (admin)
+  - (bot), delete-vpn-user <username>- deletes a user and all their devices (admin)
+  - (bot), clear-vpn - removes all VPN users and devices and resets the firewall (admin)
+CommandMatchers:
+- Regex: '(?i:add[- ]device ([.\w-]+) ([.\w\/+=-]+))'
+  Command: add-device
+- Regex: '(?i:allow[- ]ip ((?:\d{1,3}\.){3}\d{1,3}))'
+  Command: allow-ip
+- Regex: '(?i:list[- ]vpn[- ]users)'
+  Command: admin-list-vpn-users
+- Regex: '(?i:delete[- ]vpn[- ]user ([.\w-]+))'
+  Command: admin-delete-vpn-user
+- Regex: '(?i:list[- ]vpn[- ]devices)'
+  Command: list-vpn-devices
+- Regex: '(?i:delete[- ]device ([.\w-]+))'
+  Command: delete-device
+- Regex: '(?i:get[- ]vpn ([.\w-]+))'
+  Command: get-vpn
+- Regex: '(?i:clear[- ]vpn)'
+  Command: clear-vpn
+AdminCommands:
+- admin-list-vpn-users
+- admin-delete-vpn-user
+- clear-vpn
+AllowedHiddenCommands:
+- add-device
+- get-vpn
+- admin-delete-vpn-user
+- admin-list-vpn-users
+AuthRequire: VPNUsers
