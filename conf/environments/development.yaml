@@ -1,0 +1,7 @@
+## Development defaults for Floyd.
+PrimaryProtocol: ssh
+DefaultProtocol: ssh
+SecondaryProtocols: []
+
+Brain: file
+HistoryProvider: {{ env "GOPHER_HISTORY_PROVIDER" | default "mem" }}

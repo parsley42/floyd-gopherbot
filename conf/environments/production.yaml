@@ -1,0 +1,7 @@
+## Production defaults for Floyd.
+PrimaryProtocol: {{ env "GOPHER_PROTOCOL" | default "ssh" }}
+DefaultProtocol: {{ env "GOPHER_DEFAULT_PROTOCOL" | default "ssh" }}
+SecondaryProtocols: [ "slack", "googlechat" ]
+
+Brain: {{ env "GOPHER_BRAIN" | default "firestore" }}
+HistoryProvider: {{ env "GOPHER_HISTORY_PROVIDER" | default "mem" }}
