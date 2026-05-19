@@ -17,5 +17,5 @@ ProtocolConfig:
   UserKeys:
   - UserName: parsley
     PublicKeys:
-    - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDLOqrf0eWjEO/kYfjo9I+rnEiQhfU2i0tjmZ0Ju91K6 david@home"
+    - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJejjuJHtAXw0JDOu6y/Auwk/J/nAyWuynHiFHAjkr0L david@home"
     - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDWdY4CA1GVkyqeOxOvmop1EA5R37dpnENlIQjyIaY2W david@work"

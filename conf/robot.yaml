@@ -3,14 +3,8 @@
 LogLevel: {{ env "GOPHER_LOGLEVEL" | default "info" }}
 LogDest: {{ env "GOPHER_LOGDEST" | default "stdout" }}
 
-PrimaryProtocol: {{ env "GOPHER_PROTOCOL" | default "ssh" }}
-DefaultProtocol: {{ env "GOPHER_DEFAULT_PROTOCOL" | default "ssh" }}
-SecondaryProtocols: [ "slack", "googlechat" ]
-
-# Floyd's old Dynamo brain is gone. Keep him ephemeral until a persistent
-# Google-backed brain is configured.
-Brain: {{ env "GOPHER_BRAIN" | default "firestore" }}
-HistoryProvider: {{ env "GOPHER_HISTORY_PROVIDER" | default "mem" }}
+{{ $environment := env "GOPHER_ENVIRONMENT" | default "production" }}
+{{ printf "environments/%s.yaml" $environment | .Include }}
 
 {{ $workdir := env "GOPHER_WORKSPACE_DIRECTORY" | default "workspace" }}
 {{ if $workdir -}} WorkSpace: {{ $workdir }} {{- end }}
