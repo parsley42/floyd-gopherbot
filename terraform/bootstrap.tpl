@@ -69,6 +69,8 @@ rm -f "$${GBDL}"
 
 if [[ "${gopherbot_nobody}" == "true" ]]; then
   /opt/gopherbot/setuid-nobody.sh
+  iptables -A OUTPUT -m owner --uid-owner nobody -d 169.254.169.254 -p udp --dport 53 -j ACCEPT
+  iptables -A OUTPUT -m owner --uid-owner nobody -d 169.254.169.254 -p tcp --dport 53 -j ACCEPT
   iptables -A OUTPUT -m owner --uid-owner nobody -d 169.254.169.254 -j DROP
 fi
 
