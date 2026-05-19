@@ -4,7 +4,6 @@
 ## by defining e.g. AppendWaitMessages: [ ... ]
 ## ... and remember, yamllint is your friend.
 Disabled: true
-AllowDirect: true
 AllChannels: true
 CatchAll: true
 Commands:

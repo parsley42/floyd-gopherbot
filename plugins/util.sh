@@ -9,7 +9,9 @@ shift
 
 configure(){
   cat <<"EOF"
-AllowDirect: true
+AllowedPrivateCommands:
+- dinner
+- moredinner
 Commands:
 - Command: "dinner"
   Regex: "(?i:(what's for )?dinner\\??)"

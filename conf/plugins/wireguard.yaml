@@ -1,5 +1,12 @@
 ---
-AllowDirect: true
+AllowedPrivateCommands:
+- add-device
+- admin-list-vpn-users
+- admin-delete-vpn-user
+- list-vpn-devices
+- delete-device
+- get-vpn
+- clear-vpn
 Help:
 - Keywords: [ "wireguard", "vpn" ]
   Helptext:
