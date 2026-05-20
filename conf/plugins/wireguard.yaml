@@ -6,6 +6,7 @@ AllowedPrivateCommands:
 - list-vpn-devices
 - delete-device
 - get-vpn
+- get-vpn-info
 - clear-vpn
 RequiredPrivateCommands:
 - add-device
@@ -41,9 +42,14 @@ Commands:
   Usage: "delete-device <device>"
   Summary: "delete one of your VPN devices"
   Keywords: [ "wireguard", "vpn", "devices" ]
-- Regex: '(?i:get[- ]vpn ([.\w-]+))'
+- Regex: '(?i:^get[- ]vpn[- ]info$)'
+  Command: get-vpn-info
+  Usage: "get-vpn-info"
+  Summary: "show the robot WireGuard public endpoint and key"
+  Keywords: [ "wireguard", "vpn", "public", "key", "endpoint" ]
+- Regex: '(?i:^get[- ]vpn[- ]device ([.\w-]+)$)'
   Command: get-vpn
-  Usage: "get-vpn <device>"
+  Usage: "get-vpn-device <device>"
   Summary: "retrieve VPN endpoint, address, and PSK for a device"
   Keywords: [ "wireguard", "vpn", "config" ]
 - Regex: '(?i:clear[- ]vpn)'
@@ -60,7 +66,7 @@ Config:
   ManageHost: {{ if eq (env "GOPHER_ENVIRONMENT" | default "production") "production" }}true{{ else }}false{{ end }}
   WireGuardConfigPath: "/etc/wireguard/wg0.conf"
   InterfaceAddress: "10.77.0.1/24"
-  ListenPort: 42427
+  ListenPort: {{ variable "WIREGUARD_PORT" | printf "%q" }}
   PostUp: "/etc/wireguard/start-nat.sh"
   PostDown: "/etc/wireguard/stop-nat.sh"
   PrivateKey: {{ secret "WIREGUARD_PRIVATE_KEY" | printf "%q" }}

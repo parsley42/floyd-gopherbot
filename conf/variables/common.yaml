@@ -15,3 +15,4 @@ Secrets:
 Variables:
   DEFAULT_JOB_CHANNEL: "floyd-jobs"
   WIREGUARD_PUBLIC_KEY: "vfBd9Vmii2p/PBmMDwb9KpFDqr44INQ453gSfe4j8G4="
+  WIREGUARD_PORT: "42427"

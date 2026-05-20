@@ -361,6 +361,15 @@ local function get_vpn(cfg, state, device)
   say("VPN config data: Robot_IP = " .. ip .. ":" .. tostring(cfg.ListenPort) .. " | USER_IP = " .. data.AllowedIPs .. " | PSK = " .. data.PreSharedKey)
 end
 
+local function get_vpn_info(cfg)
+  if not cfg.PublicKey or cfg.PublicKey == "" then
+    say("WireGuard public key is not configured")
+    return
+  end
+  local ip = external_ip() or "<robot-public-ip>"
+  say("WireGuard VPN info:\nPublic key: " .. tostring(cfg.PublicKey) .. "\nEndpoint: " .. ip .. ":" .. tostring(cfg.ListenPort))
+end
+
 local function allow_ip(address)
   if not is_global_ipv4(address) then
     say("Invalid, unparseable, or non-public IP address")
@@ -392,6 +401,11 @@ end
 
 if command == "allow-ip" then
   allow_ip(arg[2])
+  return task.Normal
+end
+
+if command == "get-vpn-info" then
+  get_vpn_info(cfg)
   return task.Normal
 end
 
