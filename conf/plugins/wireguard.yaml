@@ -7,41 +7,61 @@ AllowedPrivateCommands:
 - delete-device
 - get-vpn
 - clear-vpn
-Help:
-- Keywords: [ "wireguard", "vpn" ]
-  Helptext:
-  - /(bot), add-device <device name> <public key> - configure new vpn connection for your device
-  - (bot), allow-ip <ip address> - open a hole in the firewall for the given address
-  - (bot), list-vpn-devices - list all user's current devices
-  - /(bot), get-vpn <device> - retrieves the information needed for 'Wg.Setup.py'
-  - (bot), delete-device <device> - deletes the user's device
-  - (bot), list-vpn-users - list all configured vpn users (admin)
-  - (bot), delete-vpn-user <username>- deletes a user and all their devices (admin)
-  - (bot), clear-vpn - removes all VPN users and devices and resets the firewall (admin)
-CommandMatchers:
+RequiredPrivateCommands:
+- add-device
+- get-vpn
+Commands:
 - Regex: '(?i:add[- ]device ([.\w-]+) ([.\w\/+=-]+))'
   Command: add-device
+  Usage: "add-device <device name> <public key>"
+  Summary: "configure a new VPN connection for your device"
+  Keywords: [ "wireguard", "vpn", "device" ]
 - Regex: '(?i:allow[- ]ip ((?:\d{1,3}\.){3}\d{1,3}))'
   Command: allow-ip
+  Usage: "allow-ip <ip address>"
+  Summary: "open the host firewall for a public source IP"
+  Keywords: [ "wireguard", "vpn", "firewall" ]
 - Regex: '(?i:list[- ]vpn[- ]users)'
   Command: admin-list-vpn-users
+  Usage: "list-vpn-users"
+  Summary: "list all configured VPN users and devices"
+  Keywords: [ "wireguard", "vpn", "users" ]
 - Regex: '(?i:delete[- ]vpn[- ]user ([.\w-]+))'
   Command: admin-delete-vpn-user
+  Usage: "delete-vpn-user <username>"
+  Summary: "delete a VPN user and all their devices"
+  Keywords: [ "wireguard", "vpn", "users" ]
 - Regex: '(?i:list[- ]vpn[- ]devices)'
   Command: list-vpn-devices
+  Usage: "list-vpn-devices"
+  Summary: "list your configured VPN devices"
+  Keywords: [ "wireguard", "vpn", "devices" ]
 - Regex: '(?i:delete[- ]device ([.\w-]+))'
   Command: delete-device
+  Usage: "delete-device <device>"
+  Summary: "delete one of your VPN devices"
+  Keywords: [ "wireguard", "vpn", "devices" ]
 - Regex: '(?i:get[- ]vpn ([.\w-]+))'
   Command: get-vpn
+  Usage: "get-vpn <device>"
+  Summary: "retrieve VPN endpoint, address, and PSK for a device"
+  Keywords: [ "wireguard", "vpn", "config" ]
 - Regex: '(?i:clear[- ]vpn)'
   Command: clear-vpn
+  Usage: "clear-vpn"
+  Summary: "remove all VPN users and devices and reset the host firewall"
+  Keywords: [ "wireguard", "vpn", "clear" ]
 AdminCommands:
 - admin-list-vpn-users
 - admin-delete-vpn-user
 - clear-vpn
-AllowedHiddenCommands:
-- add-device
-- get-vpn
-- admin-delete-vpn-user
-- admin-list-vpn-users
 AuthRequire: VPNUsers
+Config:
+  ManageHost: {{ if eq (env "GOPHER_ENVIRONMENT" | default "production") "production" }}true{{ else }}false{{ end }}
+  WireGuardConfigPath: "/etc/wireguard/wg0.conf"
+  InterfaceAddress: "10.77.0.1/24"
+  ListenPort: 42427
+  PostUp: "/etc/wireguard/start-nat.sh"
+  PostDown: "/etc/wireguard/stop-nat.sh"
+  PrivateKey: {{ secret "WIREGUARD_PRIVATE_KEY" | printf "%q" }}
+  PublicKey: {{ variable "WIREGUARD_PUBLIC_KEY" | printf "%q" }}

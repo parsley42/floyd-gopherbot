@@ -6,8 +6,6 @@ data "google_compute_image" "debian" {
 locals {
   robot_home = "/var/lib/robots/${var.bot_name}"
 
-  wireguard_secret_name = var.wireguard_private_key_secret_name != "" ? var.wireguard_private_key_secret_name : ""
-
   startup_script = templatefile("${path.module}/bootstrap.tpl", {
     bot_name                 = var.bot_name
     bot_home                 = local.robot_home
@@ -15,7 +13,6 @@ locals {
     gopherbot_version        = var.gopherbot_version
     gopherbot_nobody         = var.gopherbot_nobody
     robot_env_secret_name    = var.robot_env_secret_name
-    wireguard_secret_name    = local.wireguard_secret_name
     enable_vpn               = var.enable_vpn
     wireguard_port           = var.wireguard_port
     vpn_cidr                 = var.vpn_cidr

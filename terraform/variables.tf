@@ -29,7 +29,7 @@ variable "gopherbot_version" {
 }
 
 variable "gopherbot_nobody" {
-  description = "Whether to configure setuid/setgid nobody mode and clear robot supplementary groups before startup"
+  description = "Whether to configure UID-only setuid nobody privilege separation"
   type        = bool
   default     = false
 }
@@ -115,12 +115,6 @@ variable "vm_service_account_id" {
 variable "robot_env_secret_name" {
   description = "Secret Manager secret name containing the full robot .env file"
   type        = string
-}
-
-variable "wireguard_private_key_secret_name" {
-  description = "Optional secret name containing WireGuard private key"
-  type        = string
-  default     = ""
 }
 
 variable "systemd_timeout_stop_sec" {

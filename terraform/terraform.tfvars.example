@@ -35,9 +35,6 @@ vm_service_account_id = "gopherbot-vm"
 # Existing secret that contains your full .env file.
 robot_env_secret_name = "bishop-env"
 
-# Required when enable_vpn = true.
-wireguard_private_key_secret_name = "bishop-wireguard-private-key"
-
 systemd_timeout_stop_sec = 600
 
 labels = {

@@ -9,7 +9,6 @@ BOT_NAME="${bot_name}"
 BOT_HOME="${bot_home}"
 PROJECT_ID="${project_id}"
 ROBOT_ENV_SECRET_NAME="${robot_env_secret_name}"
-WIREGUARD_SECRET_NAME="${wireguard_secret_name}"
 ENABLE_VPN="${enable_vpn}"
 WIREGUARD_PORT="${wireguard_port}"
 VPN_CIDR="${vpn_cidr}"
@@ -22,7 +21,6 @@ DEBIAN_FRONTEND=noninteractive apt-get install -y \
   git \
   iptables \
   jq \
-  util-linux \
   wireguard
 
 get_access_token() {
@@ -75,22 +73,7 @@ if [[ "${gopherbot_nobody}" == "true" ]]; then
 fi
 
 if [[ "$${ENABLE_VPN}" == "true" ]]; then
-  if [[ -z "$${WIREGUARD_SECRET_NAME}" ]]; then
-    echo "WireGuard is enabled but wireguard_private_key_secret_name is empty" >&2
-    exit 1
-  fi
-
-  echo "Configuring WireGuard"
-  WG_PRIVATE="$(read_secret_value "$${WIREGUARD_SECRET_NAME}")"
-
-  cat > /etc/wireguard/wg0.conf <<EOF
-[Interface]
-Address = $${VPN_CIDR}
-PrivateKey = $${WG_PRIVATE}
-ListenPort = $${WIREGUARD_PORT}
-PostUp = /etc/wireguard/start-nat.sh
-PostDown = /etc/wireguard/stop-nat.sh
-EOF
+  echo "Configuring WireGuard host scripts"
 
   cat > /etc/wireguard/start-nat.sh <<EOF
 #!/bin/bash
@@ -134,8 +117,6 @@ EOF
   fi
 
   chmod +x /etc/wireguard/start-nat.sh /etc/wireguard/stop-nat.sh
-  systemctl enable wg-quick@wg0
-  systemctl start wg-quick@wg0
 fi
 
 mkdir -p /var/lib/robots
@@ -147,7 +128,7 @@ mkdir -p "$${BOT_HOME}"
 printf '%s\n' "$${ROBOT_ENV_CONTENT}" > "$${BOT_HOME}/.env"
 
 chown -R "$${BOT_NAME}:$${BOT_NAME}" "$${BOT_HOME}"
-chmod 0600 "$${BOT_HOME}/.env"
+chmod 0400 "$${BOT_HOME}/.env"
 
 cat > "/etc/sudoers.d/$${BOT_NAME}-user" <<EOF
 # User rules for robot
@@ -155,15 +136,9 @@ $${BOT_NAME} ALL=(ALL) NOPASSWD:ALL
 EOF
 chmod 0440 "/etc/sudoers.d/$${BOT_NAME}-user"
 
-if [[ "${gopherbot_nobody}" == "true" ]]; then
-  SERVICE_IDENTITY=""
-  SERVICE_ENVIRONMENT="Environment=USER=$${BOT_NAME} HOME=$${BOT_HOME} LOGNAME=$${BOT_NAME} HOSTNAME=%H"
-  SERVICE_EXEC="ExecStart=/usr/bin/setpriv --clear-groups --reuid=$${BOT_NAME} --regid=$${BOT_NAME} /opt/gopherbot/gopherbot -plainlog"
-else
-  SERVICE_IDENTITY=$'User='"$${BOT_NAME}"$'\nGroup='"$${BOT_NAME}"
-  SERVICE_ENVIRONMENT="Environment=HOSTNAME=%H"
-  SERVICE_EXEC="ExecStart=/opt/gopherbot/gopherbot -plainlog"
-fi
+SERVICE_IDENTITY=$'User='"$${BOT_NAME}"$'\nGroup='"$${BOT_NAME}"
+SERVICE_ENVIRONMENT="Environment=HOSTNAME=%H"
+SERVICE_EXEC="ExecStart=/opt/gopherbot/gopherbot -plainlog"
 
 cat > "/etc/systemd/system/$${BOT_NAME}.service" <<EOF
 [Unit]

@@ -10,10 +10,10 @@ This module codifies the infrastructure and runtime setup for a single Gopherbot
 
 1. **Prepare project-level resources** — Chat integration, Firestore brain, service accounts, etc. (via `resources/gcloud/scripts`)
 2. **Create deployment infrastructure** — VPC, firewall rules, static IP, service account for the robot VM
-3. **Prepare secrets** — Store robot .env and optional WireGuard key in Google Secret Manager
+3. **Prepare secrets** — Store the robot `.env` in Google Secret Manager
 4. **Configure and deploy** — Use Terraform variables, then apply to instantiate the VM with bootstrap
 
-The VM startup script installs Gopherbot from a release tarball, retrieves secrets, configures optional VPN, and starts the robot service. No manual SSH or post-deployment configuration is needed.
+The VM startup script installs Gopherbot from a release tarball, retrieves the robot environment, prepares optional VPN host scripts, and starts the robot service. Floyd's VPN plugin owns the WireGuard private key through normal robot-scoped secrets.
 
 ## What this creates
 
@@ -77,27 +77,20 @@ First, install WireGuard tools in Cloud Shell if you plan to use VPN:
 sudo apt-get update && sudo apt-get install -y wireguard-tools
 ```
 
-Create the robot environment secret from your local .env file:
+Create the robot environment secret from your local `.env` file:
 
 ```bash
 gcloud secrets create bishop-env --replication-policy=automatic
 gcloud secrets versions add bishop-env --data-file=/path/to/.env
 ```
 
-If using WireGuard, generate a key pair locally:
+If using WireGuard, keep the WireGuard private key in Floyd's encrypted `conf/variables/*.yaml` secrets and pass it only to the VPN plugin through plugin config. Generate a key pair locally if needed:
 
 ```bash
 wg genkey | tee wg-private.txt | wg pubkey > wg-public.txt
 ```
 
-Then store the private key in Secret Manager:
-
-```bash
-gcloud secrets create bishop-wireguard-private-key --replication-policy=automatic
-gcloud secrets versions add bishop-wireguard-private-key --data-file=wg-private.txt
-```
-
-Save the public key (`wg-public.txt`) for use in peer configuration elsewhere.
+Encrypt `wg-private.txt` with the robot's normal secret workflow and store the public key (`wg-public.txt`) as a non-secret robot variable or in peer configuration elsewhere. The Terraform module no longer reads a separate WireGuard Secret Manager secret.
 
 ## Configure Terraform variables
 
@@ -184,8 +177,9 @@ Behavior notes:
 - The startup script installs Gopherbot from GitHub release tarballs.
 - Set gopherbot_version to a release tag (for example v2.9.0) to pin version.
 - robot_env_secret_name should contain the full .env content expected by your robot.
-- gopherbot_nobody = true installs the binary setuid/setgid nobody and starts the service through `setpriv --clear-groups --reuid=<bot_name> --regid=<bot_name>`. This keeps the parent running as the robot user while preventing unprivileged children from retaining the robot user's supplementary groups.
-- enable_firewall = true configures host iptables to default-deny WireGuard and require explicit ALLOW_VPN entries.
+- gopherbot_nobody = true installs the binary setuid nobody and starts the service as the robot user. Privsep is UID-only; unprivileged children retain the robot group context, so host privileges should be granted by UID rather than group membership.
+- enable_vpn = true installs WireGuard and writes NAT/firewall helper scripts. Floyd's privileged VPN plugin writes `/etc/wireguard/wg0.conf` from robot-scoped secrets and starts/restarts `wg-quick@wg0`.
+- enable_firewall = true configures host iptables helper scripts to default-deny WireGuard and require explicit ALLOW_VPN entries.
 - enable_ssh_ingress = false means no inbound tcp/22 rule is created in GCP.
 
 Example minimum .env content:

@@ -27,17 +27,3 @@ resource "google_secret_manager_secret_iam_member" "robot_env_access" {
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${google_service_account.bot_vm.email}"
 }
-
-data "google_secret_manager_secret" "wireguard" {
-  count     = var.enable_vpn && var.wireguard_private_key_secret_name != "" ? 1 : 0
-  project   = var.project_id
-  secret_id = var.wireguard_private_key_secret_name
-}
-
-resource "google_secret_manager_secret_iam_member" "wireguard_access" {
-  count     = var.enable_vpn && var.wireguard_private_key_secret_name != "" ? 1 : 0
-  project   = var.project_id
-  secret_id = data.google_secret_manager_secret.wireguard[0].secret_id
-  role      = "roles/secretmanager.secretAccessor"
-  member    = "serviceAccount:${google_service_account.bot_vm.email}"
-}

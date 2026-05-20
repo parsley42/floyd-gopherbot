@@ -51,10 +51,10 @@ GoPlugins:
       Value: {{ secret "DUO_SKEY" | printf "%q" }}
 
 ExternalPlugins:
-#  "wireguard":
-#    Description: plugin for configuring wireguard vpn
-#    Path: plugins/wireguard.py
-#    Privileged: true
+  "wireguard":
+    Description: Plugin for configuring WireGuard VPN access
+    Path: plugins/wireguard.lua
+    Privileged: true
   "ai":
     Path: plugins/ai.rb
     Description: Disabled legacy Ruby AI plugin; use ai-fallback instead
