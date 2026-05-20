@@ -446,7 +446,11 @@ local function add_device(cfg, state, device, public_key)
   end
 
   local ip = external_ip() or "<robot-public-ip>"
-  say("VPN config data: Robot_IP = " .. ip .. ":" .. tostring(cfg.ListenPort) .. " | USER_IP = " .. user_ip .. " | PSK = " .. psk)
+  local robot_public_key = cfg.PublicKey or "<robot-public-key>"
+  say("VPN config data: Robot_IP = " .. ip .. ":" .. tostring(cfg.ListenPort) ..
+    " | Robot_Public_Key = " .. tostring(robot_public_key) ..
+    " | USER_IP = " .. user_ip ..
+    " | PSK = " .. psk)
   log_info("add_device done: user=" .. tostring(username) .. " device=" .. tostring(device) .. " ip=" .. tostring(user_ip))
   return true
 end

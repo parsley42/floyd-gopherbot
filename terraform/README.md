@@ -171,6 +171,18 @@ Behavior notes:
 - If `gopherbot_version` is pinned (for example `v2.9.0`), reset reinstalls that pinned version.
 - Robot runtime state and `.env` remain under `/var/lib/robots/<bot_name>` and are not wiped by this step.
 
+## Rebuild the VM from scratch
+
+To force Terraform to destroy and recreate only the robot VM while preserving the surrounding network, firewall, service account, and static IP resources, run:
+
+```bash
+terraform apply -replace="google_compute_instance.bot"
+```
+
+This is useful when you want the full startup bootstrap to run on a fresh instance instead of merely resetting the existing VM. The rebuilt instance will fetch the configured Gopherbot release, retrieve the robot `.env` secret, recreate host VPN helper scripts when enabled, and start the robot service.
+
+The robot's persistent data is only retained if it lives outside the instance boot disk. Treat this as a destructive VM rebuild for anything stored solely on the VM filesystem.
+
 ## Notes
 
 - Free-tier eligibility depends on region, machine type, and account limits.

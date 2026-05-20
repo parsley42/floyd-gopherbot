@@ -82,12 +82,11 @@ echo 1 > /proc/sys/net/ipv4/ip_forward
 ETHERNET_INT=\$(ip route | awk '/default/ {print \$5; exit}')
 
 iptables -N ALLOW_VPN 2>/dev/null || true
-iptables -F ALLOW_VPN
 
-iptables -t nat -I POSTROUTING 1 -s $${VPN_CIDR} -o \$${ETHERNET_INT} -j MASQUERADE
-iptables -I INPUT 1 -i wg0 -j ACCEPT
-iptables -I FORWARD 1 -i \$${ETHERNET_INT} -o wg0 -j ACCEPT
-iptables -I FORWARD 1 -i wg0 -o \$${ETHERNET_INT} -j ACCEPT
+iptables -t nat -C POSTROUTING -s $${VPN_CIDR} -o \$${ETHERNET_INT} -j MASQUERADE 2>/dev/null || iptables -t nat -I POSTROUTING 1 -s $${VPN_CIDR} -o \$${ETHERNET_INT} -j MASQUERADE
+iptables -C INPUT -i wg0 -j ACCEPT 2>/dev/null || iptables -I INPUT 1 -i wg0 -j ACCEPT
+iptables -C FORWARD -i \$${ETHERNET_INT} -o wg0 -j ACCEPT 2>/dev/null || iptables -I FORWARD 1 -i \$${ETHERNET_INT} -o wg0 -j ACCEPT
+iptables -C FORWARD -i wg0 -o \$${ETHERNET_INT} -j ACCEPT 2>/dev/null || iptables -I FORWARD 1 -i wg0 -o \$${ETHERNET_INT} -j ACCEPT
 EOF
 
   cat > /etc/wireguard/stop-nat.sh <<EOF
@@ -96,23 +95,23 @@ set -euo pipefail
 echo 0 > /proc/sys/net/ipv4/ip_forward
 ETHERNET_INT=\$(ip route | awk '/default/ {print \$5; exit}')
 
-iptables -t nat -D POSTROUTING -s $${VPN_CIDR} -o \$${ETHERNET_INT} -j MASQUERADE
-iptables -D INPUT -i wg0 -j ACCEPT
-iptables -D FORWARD -i \$${ETHERNET_INT} -o wg0 -j ACCEPT
-iptables -D FORWARD -i wg0 -o \$${ETHERNET_INT} -j ACCEPT
+while iptables -t nat -D POSTROUTING -s $${VPN_CIDR} -o \$${ETHERNET_INT} -j MASQUERADE 2>/dev/null; do :; done
+while iptables -D INPUT -i wg0 -j ACCEPT 2>/dev/null; do :; done
+while iptables -D FORWARD -i \$${ETHERNET_INT} -o wg0 -j ACCEPT 2>/dev/null; do :; done
+while iptables -D FORWARD -i wg0 -o \$${ETHERNET_INT} -j ACCEPT 2>/dev/null; do :; done
 EOF
 
   if [[ "$${ENABLE_FIREWALL}" == "true" ]]; then
     cat >> /etc/wireguard/start-nat.sh <<EOF
+while iptables -D INPUT -i \$${ETHERNET_INT} -p udp --dport $${WIREGUARD_PORT} -j ALLOW_VPN 2>/dev/null; do :; done
+while iptables -D INPUT -i \$${ETHERNET_INT} -p udp --dport $${WIREGUARD_PORT} -j DROP 2>/dev/null; do :; done
 iptables -I INPUT 1 -i \$${ETHERNET_INT} -p udp --dport $${WIREGUARD_PORT} -j DROP
 iptables -I INPUT 1 -i \$${ETHERNET_INT} -p udp --dport $${WIREGUARD_PORT} -j ALLOW_VPN
 EOF
 
     cat >> /etc/wireguard/stop-nat.sh <<EOF
-iptables -D INPUT -i \$${ETHERNET_INT} -p udp --dport $${WIREGUARD_PORT} -j ALLOW_VPN || true
-iptables -D INPUT -i \$${ETHERNET_INT} -p udp --dport $${WIREGUARD_PORT} -j DROP || true
-iptables -F ALLOW_VPN || true
-iptables -X ALLOW_VPN || true
+while iptables -D INPUT -i \$${ETHERNET_INT} -p udp --dport $${WIREGUARD_PORT} -j ALLOW_VPN 2>/dev/null; do :; done
+while iptables -D INPUT -i \$${ETHERNET_INT} -p udp --dport $${WIREGUARD_PORT} -j DROP 2>/dev/null; do :; done
 EOF
   fi
 
