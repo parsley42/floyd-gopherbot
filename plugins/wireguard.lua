@@ -76,27 +76,35 @@ local function shell_capture(cmd, label)
   return ok, body or "", status
 end
 
-local function sudo_write_file(path, content)
-  log_info("sudo write start: path=" .. tostring(path) .. " bytes=" .. tostring(#(content or "")))
-
+local function write_temp_file(content)
   local ok, tmp_path, status = shell_capture("mktemp /tmp/gopherbot-wireguard.XXXXXX", "mktemp wireguard config")
   tmp_path = trim(tmp_path)
   if not ok or tmp_path == "" then
-    log_error("sudo write failed: mktemp status=" .. tostring(status) .. " output=" .. summarize_output(tmp_path))
-    return false, "mktemp failed"
+    log_error("temp write failed: mktemp status=" .. tostring(status) .. " output=" .. summarize_output(tmp_path))
+    return nil, "mktemp failed"
   end
 
   local f, err = io.open(tmp_path, "w")
   if not f then
-    log_error("sudo write failed: open temp: " .. tostring(err))
+    log_error("temp write failed: open temp: " .. tostring(err))
     shell_capture("rm -f " .. shell_quote(tmp_path), "cleanup temp wireguard config")
-    return false, tostring(err)
+    return nil, tostring(err)
   end
 
   f:write(content)
   f:close()
 
   shell_capture("chmod 0600 " .. shell_quote(tmp_path), "chmod temp wireguard config")
+  return tmp_path, ""
+end
+
+local function sudo_write_file(path, content)
+  log_info("sudo write start: path=" .. tostring(path) .. " bytes=" .. tostring(#(content or "")))
+
+  local tmp_path, err = write_temp_file(content)
+  if not tmp_path then
+    return false, err
+  end
 
   local install_cmd = "timeout 20s sudo -n install -m 0600 -o root -g root " ..
     shell_quote(tmp_path) .. " " .. shell_quote(path)
@@ -110,6 +118,37 @@ local function sudo_write_file(path, content)
 
   log_info("sudo write done: path=" .. tostring(path))
   return true, ""
+end
+
+local function md5_file(path, use_sudo)
+  local prefix = use_sudo and "timeout 10s sudo -n " or "timeout 10s "
+  local ok, out, status = shell_capture(prefix .. "md5sum " .. shell_quote(path), "md5sum wireguard config")
+  if not ok then
+    return nil, status
+  end
+  return tostring(out or ""):match("^(%x+)")
+end
+
+local function config_unchanged(path, content)
+  local tmp_path, err = write_temp_file(content)
+  if not tmp_path then
+    log_warn("config compare skipped: temp write failed: " .. tostring(err))
+    return false
+  end
+
+  local desired_md5 = md5_file(tmp_path, false)
+  shell_capture("rm -f " .. shell_quote(tmp_path), "cleanup temp wireguard config")
+  if not desired_md5 then
+    log_warn("config compare skipped: unable to hash rendered config")
+    return false
+  end
+
+  local current_md5 = md5_file(path, true)
+  if not current_md5 then
+    log_info("config compare skipped: live config unavailable")
+    return false
+  end
+  return desired_md5 == current_md5
 end
 
 local function parse_ipv4(ip)
@@ -363,7 +402,13 @@ local function apply_wireguard(cfg, state)
     return true
   end
 
-  local ok, detail = sudo_write_file(cfg.WireGuardConfigPath, render_config(cfg, state))
+  local rendered = render_config(cfg, state)
+  if config_unchanged(cfg.WireGuardConfigPath, rendered) then
+    log_info("apply_wireguard skipped: config unchanged")
+    return true
+  end
+
+  local ok, detail = sudo_write_file(cfg.WireGuardConfigPath, rendered)
   if not ok then
     log_error("apply_wireguard write failed: " .. tostring(detail))
     say("Unable to write WireGuard configuration: " .. tostring(detail))
