@@ -23,7 +23,7 @@ local function log_debug(message)
 end
 
 local function log_info(message)
-  log_msg(log.Info, message)
+  log_msg(log.Debug, message)
 end
 
 local function log_warn(message)
@@ -56,7 +56,6 @@ end
 
 local function shell_capture(cmd, label)
   label = label or cmd
-  log_debug("shell start: " .. label)
   local marker = "__GBOT_STATUS__"
   local pipe, err = io.popen(cmd .. " 2>&1; _gb_status=$?; printf '\\n" .. marker .. "%s' \"$_gb_status\"", "r")
   if not pipe then
@@ -71,8 +70,9 @@ local function shell_capture(cmd, label)
     return false, out, "missing status"
   end
   local ok = tonumber(status) == 0
-  local level = ok and log.Debug or log.Warn
-  log_msg(level, "shell done: " .. label .. " status=" .. tostring(status) .. " output=" .. summarize_output(body))
+  if not ok then
+    log_warn("shell failed: " .. label .. " status=" .. tostring(status) .. " output=" .. summarize_output(body))
+  end
   return ok, body or "", status
 end
 
@@ -86,7 +86,6 @@ local function sudo_write_file(path, content)
     return false, "mktemp failed"
   end
 
-  log_debug("sudo write temp created: " .. tostring(tmp_path))
   local f, err = io.open(tmp_path, "w")
   if not f then
     log_error("sudo write failed: open temp: " .. tostring(err))
@@ -94,10 +93,8 @@ local function sudo_write_file(path, content)
     return false, tostring(err)
   end
 
-  log_debug("sudo write temp opened")
   f:write(content)
   f:close()
-  log_debug("sudo write temp content flushed")
 
   shell_capture("chmod 0600 " .. shell_quote(tmp_path), "chmod temp wireguard config")
 
@@ -215,9 +212,6 @@ local function allocate_ip(cfg, state)
       local ip_num = ipv4_number_from_cidr(data and data.AllowedIPs)
       if ip_num then
         used[ip_num] = true
-        log_debug("allocate_ip used: user=" .. tostring(username) ..
-          " device=" .. tostring(device) ..
-          " ip=" .. tostring(data.AllowedIPs))
       else
         log_warn("allocate_ip ignoring invalid AllowedIPs: user=" .. tostring(username) ..
           " device=" .. tostring(device) ..
@@ -242,7 +236,6 @@ local function allocate_ip(cfg, state)
 end
 
 local function load_config()
-  log_info("load_config start")
   local cfg, rv = bot:GetTaskConfig()
   if rv ~= ret.Ok then
     log_error("load_config failed: ret=" .. tostring(rv))
@@ -277,7 +270,6 @@ local function load_config()
 end
 
 local function checkout_state(rw)
-  log_info("checkout_state start: rw=" .. tostring(rw))
   local state, rv = bot:CheckoutDatum("wg", rw)
   if rv ~= ret.Ok then
     log_error("checkout_state failed: ret=" .. tostring(rv))
@@ -303,31 +295,25 @@ local function update_state(state)
     say("Unable to update WireGuard state")
     return false
   end
-  log_info("update_state done")
   return true
 end
 
 local function checkin_state(state)
   if state and state.token and state.token ~= "" then
-    log_debug("checkin_state start")
     bot:CheckinDatum(state)
-    log_debug("checkin_state done")
   end
 end
 
 local function gen_psk()
-  log_info("gen_psk start")
   local ok, out = shell_capture("wg genpsk", "wg genpsk")
   if not ok then
     log_error("gen_psk failed")
     return nil
   end
-  log_info("gen_psk done")
   return trim(out)
 end
 
 local function external_ip()
-  log_info("external_ip start")
   local ok, http = pcall(require, "http")
   if not ok then
     log_error("external_ip failed: require(http): " .. tostring(http))
@@ -339,13 +325,10 @@ local function external_ip()
     return nil
   end
   local ip = (response.body or ""):match("\nip=([^\n]+)") or (response.body or ""):match("^ip=([^\n]+)")
-  log_info("external_ip done: ip=" .. tostring(ip))
   return ip
 end
 
 local function render_config(cfg, state)
-  local user_count, device_count = state_counts(state)
-  log_info("render_config start: users=" .. tostring(user_count) .. " devices=" .. tostring(device_count))
   local lines = {
     "[Interface]",
     "Address = " .. tostring(cfg.InterfaceAddress),
@@ -370,7 +353,6 @@ local function render_config(cfg, state)
   end
 
   local rendered = table.concat(lines, "\n")
-  log_info("render_config done: bytes=" .. tostring(#rendered))
   return rendered
 end
 
@@ -388,15 +370,11 @@ local function apply_wireguard(cfg, state)
     return false
   end
 
-  log_info("apply_wireguard enable service start")
   local enable_ok, enable_out, enable_status = shell_capture("timeout 20s sudo -n systemctl enable wg-quick@wg0", "systemctl enable wg-quick@wg0")
   if not enable_ok then
     log_warn("apply_wireguard enable service failed: status=" .. tostring(enable_status) .. " output=" .. summarize_output(enable_out))
-  else
-    log_info("apply_wireguard enable service done")
   end
 
-  log_info("apply_wireguard restart service start")
   local restart_out, restart_status
   ok, restart_out, restart_status = shell_capture("timeout 45s sudo -n systemctl restart wg-quick@wg0", "systemctl restart wg-quick@wg0")
   if not ok then
@@ -404,7 +382,6 @@ local function apply_wireguard(cfg, state)
     say("Unable to restart WireGuard: status=" .. tostring(restart_status))
     return false
   end
-  log_info("apply_wireguard restart service done")
   log_info("apply_wireguard done")
   return true
 end
@@ -445,7 +422,6 @@ local function add_device(cfg, state, device, public_key)
     say("Unable to allocate a VPN address")
     return false
   end
-  log_info("add_device allocated address: user=" .. tostring(username) .. " device=" .. tostring(device) .. " ip=" .. tostring(user_ip))
 
   local psk = gen_psk()
   if not psk or psk == "" then
@@ -453,7 +429,6 @@ local function add_device(cfg, state, device, public_key)
     say("Unable to generate a WireGuard pre-shared key")
     return false
   end
-  log_info("add_device generated psk: length=" .. tostring(#psk))
 
   state.datum.Users[username][device] = {
     PublicKey = public_key,
@@ -508,7 +483,6 @@ local function delete_device(cfg, state, device)
 end
 
 local function list_users(state)
-  log_info("list_users start")
   local rows = {}
   for _, username in ipairs(sorted_keys(state.datum.Users)) do
     table.insert(rows, username .. ": " .. table.concat(sorted_keys(state.datum.Users[username]), ", "))
@@ -518,19 +492,15 @@ local function list_users(state)
   else
     say("\n" .. table.concat(rows, "\n"))
   end
-  log_info("list_users done: rows=" .. tostring(#rows))
 end
 
 local function list_devices(state)
   local username = bot.user
-  log_info("list_devices start: user=" .. tostring(username))
   if state.datum.Users[username] then
     local devices = sorted_keys(state.datum.Users[username])
     say("Device(s) for user '" .. username .. "': " .. table.concat(devices, ", "))
-    log_info("list_devices done: user=" .. tostring(username) .. " devices=" .. tostring(#devices))
   else
     say("No devices found for user '" .. tostring(username) .. "'")
-    log_info("list_devices done: user=" .. tostring(username) .. " devices=0")
   end
 end
 
@@ -550,7 +520,6 @@ local function get_vpn(cfg, state, device)
 end
 
 local function get_vpn_info(cfg)
-  log_info("get_vpn_info start")
   if not cfg.PublicKey or cfg.PublicKey == "" then
     log_error("get_vpn_info failed: missing public key")
     say("WireGuard public key is not configured")
@@ -558,11 +527,9 @@ local function get_vpn_info(cfg)
   end
   local ip = external_ip() or "<robot-public-ip>"
   say("WireGuard VPN info:\nPublic key: " .. tostring(cfg.PublicKey) .. "\nEndpoint: " .. ip .. ":" .. tostring(cfg.ListenPort))
-  log_info("get_vpn_info done: endpoint=" .. tostring(ip) .. ":" .. tostring(cfg.ListenPort))
 end
 
 local function allow_ip(address)
-  log_info("allow_ip start: address=" .. tostring(address))
   if not is_global_ipv4(address) then
     log_warn("allow_ip rejected: address=" .. tostring(address))
     say("Invalid, unparseable, or non-public IP address")
@@ -604,13 +571,11 @@ end
 
 if command == "allow-ip" then
   allow_ip(arg[2])
-  log_info("command done: command=" .. tostring(command))
   return task.Normal
 end
 
 if command == "get-vpn-info" then
   get_vpn_info(cfg)
-  log_info("command done: command=" .. tostring(command))
   return task.Normal
 end
 
@@ -628,28 +593,20 @@ if not state then
 end
 
 if command == "init" then
-  log_info("dispatch init")
   apply_wireguard(cfg, state)
 elseif command == "add-device" then
-  log_info("dispatch add-device")
   add_device(cfg, state, arg[2], arg[3])
 elseif command == "admin-list-vpn-users" then
-  log_info("dispatch admin-list-vpn-users")
   list_users(state)
 elseif command == "admin-delete-vpn-user" then
-  log_info("dispatch admin-delete-vpn-user")
   delete_user(cfg, state, arg[2])
 elseif command == "list-vpn-devices" then
-  log_info("dispatch list-vpn-devices")
   list_devices(state)
 elseif command == "delete-device" then
-  log_info("dispatch delete-device")
   delete_device(cfg, state, arg[2])
 elseif command == "get-vpn" then
-  log_info("dispatch get-vpn")
   get_vpn(cfg, state, arg[2])
 elseif command == "clear-vpn" then
-  log_info("dispatch clear-vpn")
   state.datum.Users = {}
   if update_state(state) and apply_wireguard(cfg, state) then
     if cfg.ManageHost then
