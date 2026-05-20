@@ -147,13 +147,9 @@ local function split_cidr(cidr)
   return ip, prefix
 end
 
-local function next_host_ip(cidr_or_host)
+local function ipv4_number_from_cidr(cidr_or_host)
   local ip = tostring(cidr_or_host or ""):match("^([^/]+)") or ""
-  local n = parse_ipv4(ip)
-  if not n then
-    return nil
-  end
-  return format_ipv4(n + 1) .. "/32"
+  return parse_ipv4(ip)
 end
 
 local function is_global_ipv4(address)
@@ -204,6 +200,47 @@ local function state_counts(state)
   return user_count, device_count
 end
 
+local function allocate_ip(cfg, state)
+  log_info("allocate_ip start: interface=" .. tostring(cfg.InterfaceAddress))
+  local base_num = ipv4_number_from_cidr(cfg.InterfaceAddress)
+  if not base_num then
+    log_error("allocate_ip failed: invalid interface address")
+    return nil
+  end
+
+  local used = {}
+  local users = state and state.datum and state.datum.Users or {}
+  for username, devices in pairs(users) do
+    for device, data in pairs(devices or {}) do
+      local ip_num = ipv4_number_from_cidr(data and data.AllowedIPs)
+      if ip_num then
+        used[ip_num] = true
+        log_debug("allocate_ip used: user=" .. tostring(username) ..
+          " device=" .. tostring(device) ..
+          " ip=" .. tostring(data.AllowedIPs))
+      else
+        log_warn("allocate_ip ignoring invalid AllowedIPs: user=" .. tostring(username) ..
+          " device=" .. tostring(device) ..
+          " allowed_ips=" .. tostring(data and data.AllowedIPs))
+      end
+    end
+  end
+
+  local candidate = base_num + 1
+  local max_candidate = base_num + 65534
+  while candidate <= max_candidate do
+    if not used[candidate] then
+      local allocated = format_ipv4(candidate) .. "/32"
+      log_info("allocate_ip done: allocated=" .. allocated)
+      return allocated
+    end
+    candidate = candidate + 1
+  end
+
+  log_error("allocate_ip failed: no free addresses")
+  return nil
+end
+
 local function load_config()
   log_info("load_config start")
   local cfg, rv = bot:GetTaskConfig()
@@ -248,11 +285,9 @@ local function checkout_state(rw)
     return nil
   end
   state.datum = state.datum or {}
-  state.datum.Latest_IP = state.datum.Latest_IP or ""
   state.datum.Users = state.datum.Users or {}
   local user_count, device_count = state_counts(state)
   log_info("checkout_state done: exists=" .. tostring(state.exists) ..
-    " latest_ip=" .. tostring(state.datum.Latest_IP) ..
     " users=" .. tostring(user_count) ..
     " devices=" .. tostring(device_count))
   return state
@@ -260,8 +295,7 @@ end
 
 local function update_state(state)
   local user_count, device_count = state_counts(state)
-  log_info("update_state start: latest_ip=" .. tostring(state.datum and state.datum.Latest_IP) ..
-    " users=" .. tostring(user_count) ..
+  log_info("update_state start: users=" .. tostring(user_count) ..
     " devices=" .. tostring(device_count))
   local rv = bot:UpdateDatum(state)
   if rv ~= ret.Ok then
@@ -405,14 +439,7 @@ local function add_device(cfg, state, device, public_key)
     return false
   end
 
-  local user_ip
-  if state.datum.Latest_IP == "" then
-    log_debug("add_device allocating first address from interface=" .. tostring(cfg.InterfaceAddress))
-    user_ip = next_host_ip(cfg.InterfaceAddress)
-  else
-    log_debug("add_device allocating next address after latest=" .. tostring(state.datum.Latest_IP))
-    user_ip = next_host_ip(state.datum.Latest_IP)
-  end
+  local user_ip = allocate_ip(cfg, state)
   if not user_ip then
     log_error("add_device failed: unable to allocate address")
     say("Unable to allocate a VPN address")
@@ -428,7 +455,6 @@ local function add_device(cfg, state, device, public_key)
   end
   log_info("add_device generated psk: length=" .. tostring(#psk))
 
-  state.datum.Latest_IP = user_ip
   state.datum.Users[username][device] = {
     PublicKey = public_key,
     PreSharedKey = psk,
@@ -625,7 +651,6 @@ elseif command == "get-vpn" then
 elseif command == "clear-vpn" then
   log_info("dispatch clear-vpn")
   state.datum.Users = {}
-  state.datum.Latest_IP = ""
   if update_state(state) and apply_wireguard(cfg, state) then
     if cfg.ManageHost then
       shell_capture("sudo -n iptables -F ALLOW_VPN", "iptables flush ALLOW_VPN")
