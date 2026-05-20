@@ -78,22 +78,41 @@ end
 
 local function sudo_write_file(path, content)
   log_info("sudo write start: path=" .. tostring(path) .. " bytes=" .. tostring(#(content or "")))
-  local cmd = "sudo -n sh -c " .. shell_quote("umask 077; cat > " .. shell_quote(path))
-  local pipe, err = io.popen(cmd, "w")
-  if not pipe then
-    log_error("sudo write popen failed: " .. tostring(err))
+
+  local ok, tmp_path, status = shell_capture("mktemp /tmp/gopherbot-wireguard.XXXXXX", "mktemp wireguard config")
+  tmp_path = trim(tmp_path)
+  if not ok or tmp_path == "" then
+    log_error("sudo write failed: mktemp status=" .. tostring(status) .. " output=" .. summarize_output(tmp_path))
+    return false, "mktemp failed"
+  end
+
+  log_debug("sudo write temp created: " .. tostring(tmp_path))
+  local f, err = io.open(tmp_path, "w")
+  if not f then
+    log_error("sudo write failed: open temp: " .. tostring(err))
+    shell_capture("rm -f " .. shell_quote(tmp_path), "cleanup temp wireguard config")
     return false, tostring(err)
   end
-  log_debug("sudo write stream opened: path=" .. tostring(path))
-  pipe:write(content)
-  log_debug("sudo write content sent, closing stream: path=" .. tostring(path))
-  local ok, how, code = pipe:close()
-  if ok == true or ok == 0 or (how == "exit" and code == 0) then
-    log_info("sudo write done: path=" .. tostring(path))
-    return true, ""
+
+  log_debug("sudo write temp opened")
+  f:write(content)
+  f:close()
+  log_debug("sudo write temp content flushed")
+
+  shell_capture("chmod 0600 " .. shell_quote(tmp_path), "chmod temp wireguard config")
+
+  local install_cmd = "timeout 20s sudo -n install -m 0600 -o root -g root " ..
+    shell_quote(tmp_path) .. " " .. shell_quote(path)
+  local install_ok, install_out, install_status = shell_capture(install_cmd, "install wireguard config")
+  shell_capture("rm -f " .. shell_quote(tmp_path), "cleanup temp wireguard config")
+
+  if not install_ok then
+    log_error("sudo write failed: install status=" .. tostring(install_status) .. " output=" .. summarize_output(install_out))
+    return false, "install status=" .. tostring(install_status)
   end
-  log_error("sudo write failed: path=" .. tostring(path) .. " status=" .. tostring(ok) .. "/" .. tostring(how) .. "/" .. tostring(code))
-  return false, tostring(ok) .. "/" .. tostring(how) .. "/" .. tostring(code)
+
+  log_info("sudo write done: path=" .. tostring(path))
+  return true, ""
 end
 
 local function parse_ipv4(ip)

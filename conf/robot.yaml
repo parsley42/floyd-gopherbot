@@ -55,6 +55,10 @@ ExternalPlugins:
     Description: Plugin for configuring WireGuard VPN access
     Path: plugins/wireguard.lua
     Privileged: true
+  "lua-sudo-harness":
+    Description: Admin-only Lua and sudo development harness
+    Path: plugins/lua_sudo_harness.lua
+    Privileged: true
   "ai":
     Path: plugins/ai.rb
     Description: Disabled legacy Ruby AI plugin; use ai-fallback instead

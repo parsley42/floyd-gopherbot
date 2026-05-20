@@ -1,0 +1,16 @@
+---
+RequireAdmin: true
+AllowedPrivateCommands:
+- lua-sudo-probe
+RequiredPrivateCommands:
+- lua-sudo-probe
+Commands:
+- Regex: '(?i:^lua[- ]sudo[- ]probe$)'
+  Command: lua-sudo-probe
+  Usage: "lua-sudo-probe"
+  Summary: "run a safe privileged Lua/sudo harness for plugin development"
+  Keywords: [ "lua", "sudo", "privsep", "debug" ]
+Config:
+  RootProbePath: "/tmp/floyd-lua-sudo-harness-root.txt"
+  LocalProbePath: "/tmp/floyd-lua-sudo-harness-local.txt"
+  CommandTimeoutSeconds: 20
