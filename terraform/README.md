@@ -13,7 +13,7 @@ This module codifies the infrastructure and runtime setup for a single Gopherbot
 3. **Prepare secrets** — Store the robot `.env` in Google Secret Manager
 4. **Configure and deploy** — Use Terraform variables, then apply to instantiate the VM with bootstrap
 
-The VM startup script installs Gopherbot from a release tarball, retrieves the robot environment, prepares optional VPN host scripts, and starts the robot service. Floyd's VPN plugin owns the WireGuard private key through normal robot-scoped secrets.
+The VM startup script installs Gopherbot from a release tarball, retrieves the robot environment, prepares optional VPN host scripts, and starts the robot service. Robot-scoped plugins own extension secrets such as a WireGuard private key.
 
 ## What this creates
 
@@ -84,7 +84,7 @@ gcloud secrets create bishop-env --replication-policy=automatic
 gcloud secrets versions add bishop-env --data-file=/path/to/.env
 ```
 
-If using WireGuard, keep the WireGuard private key in Floyd's encrypted `conf/variables/*.yaml` secrets and pass it only to the VPN plugin through plugin config. Generate a key pair locally if needed:
+If using WireGuard, keep the WireGuard private key in the robot repository's encrypted `conf/variables/*.yaml` secrets and pass it only to the VPN plugin through plugin config. Generate a key pair locally if needed:
 
 ```bash
 wg genkey | tee wg-private.txt | wg pubkey > wg-public.txt
@@ -178,7 +178,7 @@ Behavior notes:
 - Set gopherbot_version to a release tag (for example v2.9.0) to pin version.
 - robot_env_secret_name should contain the full .env content expected by your robot.
 - gopherbot_nobody = true installs the binary setuid nobody and starts the service as the robot user. Privsep is UID-only; unprivileged children retain the robot group context, so host privileges should be granted by UID rather than group membership.
-- enable_vpn = true installs WireGuard and writes NAT/firewall helper scripts. Floyd's privileged VPN plugin writes `/etc/wireguard/wg0.conf` from robot-scoped secrets and starts/restarts `wg-quick@wg0`.
+- enable_vpn = true installs WireGuard and writes NAT/firewall helper scripts. The robot's privileged VPN plugin writes `/etc/wireguard/wg0.conf` from robot-scoped secrets and starts/restarts `wg-quick@wg0`.
 - enable_firewall = true configures host iptables helper scripts to default-deny WireGuard and require explicit ALLOW_VPN entries.
 - enable_ssh_ingress = false means no inbound tcp/22 rule is created in GCP.
 
