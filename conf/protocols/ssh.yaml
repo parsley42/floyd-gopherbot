@@ -1,5 +1,5 @@
 ProtocolConfig:
-  ListenHost: localhost
+  ListenHost: {{ if eq (env "GOPHER_ENVIRONMENT") "development" }}localhost{{ else }}all{{ end }}
   DefaultChannel: floyd-jobs
   Color: true
   HearSelf: true
