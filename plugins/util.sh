@@ -27,14 +27,14 @@ EOF
 }
 
 case "$COMMAND" in
-  "init")
+  "_init")
     if [ ! -e ".wokeup" ]
     then
       SendChannelMessage "general" "Floyd here now!"
       touch ".wokeup"
     fi
     ;;
-  "configure")
+  "_configure")
     configure
     ;;
   "code")

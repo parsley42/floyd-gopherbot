@@ -14,9 +14,9 @@ defaultConfig = <<'DEFCONFIG'
 DEFCONFIG
 
 case command
-when "init"
+when "_init"
   exit(0)
-when "configure"
+when "_configure"
   # puts(defaultConfig)
   exit(0)
 end
@@ -28,7 +28,7 @@ botalias = bot.GetBotAttribute("alias").attr
 botname = bot.GetBotAttribute("name").attr
 
 # When command mode = "alias", reproduce the logic of builtin-fallback
-if command == "catchall" and cmdmode == "alias"
+if command == "_catchall" and cmdmode == "alias"
   if direct
     bot.Say("Command not found; try your command in a channel, or use '#{botalias}help'")
   else
@@ -37,9 +37,18 @@ if command == "catchall" and cmdmode == "alias"
   exit(0)
 end
 
+if command == "_expiresub"
+  thread_id = ENV["GOPHER_THREAD_ID"]
+  if thread_id and thread_id.length > 0
+    bot.DeleteMemory("#{OpenAI_API::ShortTermMemoryPrefix}:#{thread_id}", true)
+    bot.DeleteMemory("#{OpenAI_API::ShortTermMemoryDebugPrefix}:#{thread_id}", true)
+  end
+  exit(0)
+end
+
 case command
 # For dedicated AI channels, use a MessageMatcher of .* and ChannelOnly: true
-when "ambient", "catchall", "subscribed"
+when "ambient", "_catchall", "_subscribed"
   ai = OpenAI_API.new(bot, direct: direct, botalias: botalias, botname: botname)
   unless ai.status.valid
     if ai.status.error

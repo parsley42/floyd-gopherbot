@@ -6,7 +6,7 @@ local log = gopherbot.log
 
 local command = arg[1]
 
-if command == "configure" then
+if command == "_configure" then
   return "---\nCommands: []"
 end
 
@@ -177,7 +177,7 @@ local function run_probe()
   return task.Normal
 end
 
-if command == "init" then
+if command == "_init" then
   return task.Normal
 end
 
