@@ -72,6 +72,7 @@ ExternalPlugins:
   "util":
     Description: A convenience plugin for various tasks
     Path: plugins/util.sh
+    Privileged: true
 
 ExternalJobs:
   "backup":

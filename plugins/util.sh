@@ -30,24 +30,12 @@ case "$COMMAND" in
   "_init")
     if [ ! -e ".wokeup" ]
     then
-      SendChannelMessage "general" "Floyd here now!"
+      SendChannelMessage "general" "Oh boy! Are we gonna try something dangerous now?"
       touch ".wokeup"
     fi
     ;;
   "_configure")
     configure
-    ;;
-  "code")
-    Say "Ok, I'll start the 'cloud9wks' job and let you know when your workstation is ready..."
-    AddJob cloud9wks
-    AddTask notify $GOPHER_USER "Happy coding!"
-    FailTask notify $GOPHER_USER "Build failed, check history for the 'cloud9wks' job"
-    ;;
-  "wake")
-    Say "Ok, I'll see if I can rouse Bender and let you know when he's awake..."
-    AddJob bender
-    AddTask notify $GOPHER_USER "Bender is up, have at it!"
-    FailTask notify $GOPHER_USER "Couldn't wake Bender - check history for the 'bender' job"
     ;;
   "dinner")
     AddCommand lists "pick a random item from the dinner meals list"
