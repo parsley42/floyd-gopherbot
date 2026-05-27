@@ -4,7 +4,6 @@ ProtocolConfig:
   AcceptSlashCommands: true
   SlashCommand: /floyd
   MaxMessageSplit: 2
-  HearSelf: true
   UserMap:
     # floyd: U0533UX66LT
     parsley: U0JLW8EMS

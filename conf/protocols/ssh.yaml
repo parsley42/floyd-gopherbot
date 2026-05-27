@@ -2,7 +2,6 @@ ProtocolConfig:
   ListenHost: {{ if eq (env "GOPHER_ENVIRONMENT") "development" }}localhost{{ else }}all{{ end }}
   DefaultChannel: floyd-jobs
   Color: true
-  HearSelf: true
   HostKey: {{ secret "SSH_HOST_KEY" | printf "%q" }}
   Channels:
   - ai

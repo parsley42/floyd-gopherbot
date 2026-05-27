@@ -1,7 +1,6 @@
 ProtocolConfig:
   EOF: ";quit"
   Abort: ";abort"
-  HearSelf: true
   GenerateNewlines: true
   StartChannel: floyd-jobs
   StartUser: parse
