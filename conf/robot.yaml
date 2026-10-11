@@ -73,6 +73,9 @@ ExternalPlugins:
     Description: A convenience plugin for various tasks
     Path: plugins/util.sh
     Privileged: true
+  "ip":
+    Description: Look up Floyd's current external IP address using ip.me
+    Path: plugins/ip.gsh
 
 ExternalJobs:
   "backup":

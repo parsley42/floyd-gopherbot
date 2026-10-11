@@ -1,0 +1,21 @@
+---
+AllChannels: true
+AllowedPrivateCommands:
+- ip
+Commands:
+- Command: ip
+  SimpleMatcher: "{what is|whats|what's|show|get} {my|the|your} {external|public|current} ip {address}"
+  Usage: "ip"
+  Summary: "get Floyd's current external IP address via ip.me"
+  Keywords: [ "ip", "address", "external", "public", "ip.me" ]
+  Examples:
+  - "(alias) ip"
+  - "(alias) external ip"
+  - "(bot) what's your external ip?"
+- Command: ip
+  SimpleMatcher: "whatsmyip"
+  Usage: "whatsmyip"
+  Summary: "get Floyd's current external IP address via ip.me"
+  Keywords: [ "ip", "whatsmyip" ]
+  Examples:
+  - "(alias) whatsmyip"
